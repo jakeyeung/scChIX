@@ -8,5 +8,6 @@ library(devtools)
 devtools::install_github("jakeyeung/scChIX")
 ```
 
-Follow the vignettes for an example of deconvolving the multiplexed signal. 
+Follow the vignettes for an example of deconvolving the multiplexed signal. The output is a linked UMAP. In the example it is H3K27me3 UMAP on the left, H3K9me3 UMAP on the right, with lines connecting the two maps together:
 
+![Linked UMAP example:](example_umap.png)
