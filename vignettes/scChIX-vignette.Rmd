@@ -268,8 +268,8 @@ jsettings$random_state <- 123
 jmarks <- c("K27m3", "K9m3")
 names(jmarks) <- jmarks
 
-data(H3K27me3_ProjectionOutput.RData)  # out.proj.K27m3
-data(H3K9me3_ProjectionOutput.RData)  # out.proj.K9m3
+data(H3K27me3_ProjectionOutput)  # out.proj.K27m3
+data(H3K9me3_ProjectionOutput)  # out.proj.K9m3
 
 out.proj.lst <- list("K27m3" = out.proj.K27m3,
                      "K9m3" = out.proj.K9m3)
