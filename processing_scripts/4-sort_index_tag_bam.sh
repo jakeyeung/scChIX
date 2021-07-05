@@ -28,6 +28,9 @@ dnames="trimmed_demux_fastqs_singles trimmed_demux_fastqs_doubles"
 outdir="/hpc/hub_oudenaarden/jyeung/data/dblchic/gastrulation/tagged_bams"
 [[ ! -d $outdir ]] && mkdir $outdir
 
+wd="/hpc/hub_oudenaarden/jyeung/data/dblchic/gastrulation/workdir"
+cd $wd
+
 # clusterdir="/hpc/hub_oudenaarden/jyeung/data/dblchic/gastrulation/clusterfiles"
 for d in $dnames; do
     inmain=${inbase}/${d}
@@ -48,7 +51,7 @@ for d in $dnames; do
         sortedbam=$indir/bwaMapped.sorted.bam
         outbamtagged=$outdir/${bname}.sorted.tagged.bam
         [[ -e $outbamtagged ]] && echo "$outbamtagged found, continuing" && continue
-        cmd=". /hpc/hub_oudenaarden/jyeung/software/anaconda3/etc/profile.d/conda.sh; conda activate scmo4_NewCountFilters; samtools sort -T $tmpdir -@ $ncores $inbam > $sortedbam; samtools index $sortedbam; bamtagmultiome.py -method chic --cluster -clusterdir $tmpdir -o $outbamtagged -mem 64 -time 48 --multiprocess $sortedbam"
+        cmd=". /hpc/hub_oudenaarden/jyeung/software/anaconda3/etc/profile.d/conda.sh; conda activate scmo4_NewCountFilters; samtools sort -T $tmpdir -@ $ncores $inbam > $sortedbam; samtools index $sortedbam; cd $wd; bamtagmultiome.py -method chic --cluster -clusterdir $tmpdir -o $outbamtagged -mem 64 -time 48 --multiprocess $sortedbam"
         echo $cmd
         sbatch --time=$jtime --mem-per-cpu=$jmem --output=${BNAME}_%j.log --ntasks=1 --nodes=1 --job-name=${bname} --wrap "$cmd"
     done

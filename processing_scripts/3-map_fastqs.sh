@@ -19,7 +19,8 @@ indxbase="/hpc/hub_oudenaarden/group_references/ensembl/97/mus_musculus/primary_
 inbase="/hpc/hub_oudenaarden/jyeung/data/dblchic/gastrulation"
 [[ ! -d $inbase ]] && echo "$inbase not found, exiting" && exit 1
 
-dnames="trimmed_demux_fastqs_singles trimmed_demux_fastqs_doubles"
+# dnames="trimmed_demux_fastqs_singles trimmed_demux_fastqs_doubles"
+dnames="trimmed_demux_fastqs_singles"
 
 for d in $dnames; do
     inmain=${inbase}/${d}

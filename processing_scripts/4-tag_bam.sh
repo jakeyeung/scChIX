@@ -41,7 +41,8 @@ for d in $dnames; do
     # echo $tmpdir
     # exit 0
 
-    for indir in `ls -d $inmain/E*`; do
+    # for indir in `ls -d $inmain/E*`; do
+    for indir in `ls -d $inmain/E8*`; do
         bname=$(basename $indir)
         inbam=$indir/bwaMapped.bam
         [[ ! -e $inbam ]] && echo "$inbam not found, exiting" && exit 1

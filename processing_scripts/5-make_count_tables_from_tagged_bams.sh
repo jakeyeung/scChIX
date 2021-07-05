@@ -5,11 +5,11 @@
 # 2021-06-27
 
 
-# WRAP UP
-while [[ `squeue -u jyeung | wc -l` > 1 ]]; do
-        echo "sleep for 60 seconds"
-        sleep 60
-done
+# # WRAP UP
+# while [[ `squeue -u jyeung | wc -l` > 1 ]]; do
+#         echo "sleep for 60 seconds"
+#         sleep 60
+# done
 
 jmem='16G'
 jtime='24:00:00'
@@ -24,7 +24,7 @@ bl="/hpc/hub_oudenaarden/jyeung/data/databases/blacklists/mm10.blacklist.copy.so
 
 binsizes="10000 50000"
 
-binsize=10000
+# binsize=10000
 for binsize in $binsizes; do
     stepsize=$binsize
 
