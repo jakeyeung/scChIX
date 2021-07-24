@@ -7,7 +7,8 @@
 jmem='16G'
 jtime='1:00:00'
 
-rs="/home/hub_oudenaarden/jyeung/projects/scChIX/processing_scripts/rbind_RZ_files.R"
+rs="/home/hub_oudenaarden/jyeung/projects/scChIX/utils/rbind_RZ_files.R"
+[[ ! -e $rs ]] && echo "$rs not found, exiting" && exit 1
 
 # jmark=""
 # jmarks="K36 K4m1 K36-K9m3 K36-K4m1 K36-K27m3 K9m3"
