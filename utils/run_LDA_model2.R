@@ -49,6 +49,8 @@ parser$add_argument("--SkipPlots", action="store_true", default=FALSE,
                         help="Do not make plots, default FALSE")
 parser$add_argument("--RemoveDupRows", action="store_true", default=FALSE,
                         help="Remove duplicated rows, default FALSE")
+parser$add_argument("--RemoveEmptyCells", action="store_true", default=FALSE,
+                        help="Remove empty cols, default FALSE")
 parser$add_argument("--SkipMeanVar", action="store_true", default=FALSE,
                         help="Do not make plots, default FALSE")
                                         
@@ -56,11 +58,6 @@ parser$add_argument("--SkipMeanVar", action="store_true", default=FALSE,
 # otherwise if options not found on command line then set defaults, 
 args <- parser$parse_args()
 
-# print some progress messages to stderr if "quietly" wasn't requested
-if ( args$verbose ) { 
-    print("Arguments:")
-    print(args)
-}
 
 setwd(here())
 print(paste("Work directory: ", getwd()))
@@ -92,6 +89,15 @@ if (endsWith(inpath, ".rds")){
   # assume .RData object with count.dat$counts
   load(inpath, v=T)
   count.mat <- count.dat$counts
+}
+
+# remove empty cols
+if (args$RemoveEmptyCells){
+  print("Removing empty cells...")
+  print(dim(count.mat))
+  cols.empty <- colSums(count.mat) == 0
+  count.mat <- count.mat[, !cols.empty]
+  print(dim(count.mat))
 }
 
 print(dim(count.mat))
