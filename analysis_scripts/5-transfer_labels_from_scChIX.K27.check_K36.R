@@ -1,6 +1,6 @@
 # Jake Yeung
 # Date of Creation: 2021-08-02
-# File: ~/projects/scChIX/analysis_scripts/5-transfer_labels_from_scChIX.K9me3.check_K9m3part.R
+# File: ~/projects/scChIX/analysis_scripts/5-transfer_labels_from_scChIX.K27.check_K36.R
 #
 
 rm(list=ls())
@@ -32,28 +32,13 @@ hubprefix <- "/home/jyeung/hub_oudenaarden"
 
 # Load matrix  ------------------------------------------------------------
 
-# jquants <- c("0.15", "0.2")
-# jquants <- c("0.2")
-# jquants <- c("0.15")
-# jquants <- c("0.15")
 
-# jdate <- "2021-07-16"
-# jquant <- "0.15"
 
-# jdate <- "2021-07-19"
-# jquant <- "manual"
+jdate <- "2021-07-29"
+jquant <- "manual2nocenternoE8unifyK36"
 
-# jdate <- "2021-07-22"
-# jquant <- "manual2noblood"
-
-# jdate <- "2021-07-20"
-# jquant <- "manual2"
-
-jdate <- "2021-07-23"
-jquant <- "manual2nocenter"
-
-# jmark1 <- "K36"; jmark2 <- "K27"; jmarks <- c(jmark1, jmark2); jmarkdbl <- paste(jmark1, jmark2, sep = "-")
-jmark1 <- "K36"; jmark2 <- "K9m3"; jmarks <- c(jmark1, jmark2); jmarkdbl <- paste(jmark1, jmark2, sep = "-")
+jmark1 <- "K36"; jmark2 <- "K27"; jmarks <- c(jmark1, jmark2); jmarkdbl <- paste(jmark1, jmark2, sep = "-")
+# jmark1 <- "K36"; jmark2 <- "K9m3"; jmarks <- c(jmark1, jmark2); jmarkdbl <- paste(jmark1, jmark2, sep = "-")
 
 names(jmarks) <- jmarks
 jmarkdbl <- paste(c(jmark1, jmark2), collapse = "-")
@@ -65,17 +50,6 @@ jname <- paste(jprefix, jquant, jstr, sep = "_")
 
 infrdata <- file.path(hubprefix, paste0("jyeung/data/dblchic/gastrulation/scchix_pipeline_from_LDA/scchix_outputs_objs/", jname, "/unmix_scchix_inputs_clstr_by_celltype_", jmarkdbl, ".removeNA_FALSE.RData"))
 assertthat::assert_that(file.exists(infrdata))
-
-
-# For label transfer ------------------------------------------------------
-
-
-nnearest <- 30
-jmark <- jmarks[[2]]
-outmain <- "/home/jyeung/hub_oudenaarden/jyeung/data/dblchic/gastrulation/from_analysis/scchix_downstream_plots/celltyping_after_scchix"
-
-
-# Load and go -------------------------------------------------------------
 
 
 
@@ -145,6 +119,7 @@ dat.umap.merge.lst <- lapply(jmarks, function(jmarktmp){
 # Plot linked UMAP  -------------------------------------------------------
 
 
+
 dat.merge.rbind <- bind_rows(dat.umap.merge.lst) %>%
   group_by(mark) %>%
   mutate(umap1.scale = scale(umap1, center = TRUE, scale = TRUE),
@@ -164,31 +139,6 @@ ggplot(dat.merge.rbind, aes(x = umap1.shift, y = 1 * umap2.scale, group = cell, 
 
 
 
-# Label by UMAP location ------------------------------------------------
-
-jsub <- subset(dat.merge.rbind, type == "dbl" & mark == jmarks[[2]] & umap2.scale > -1)
-cell2lab <- hash::hash(jsub$cell, jsub$umap1.shift)
-
-dat.merge.rbind$label.cont <- sapply(dat.merge.rbind$cell, function(x) AssignHash(x = x, jhash = cell2lab, null.fill = NA))
-
-ggplot(dat.merge.rbind %>% filter(type == "dbl") %>% arrange(label.cont), aes(x = umap1.shift, y = umap2.scale, color = label.cont, group = cell)) +
-  geom_point() +
-  geom_path(alpha = 0.05) +
-  theme_bw() +
-  ggtitle(paste(jmarks, collapse = "_")) +
-  scale_color_viridis_c() +
-  theme(aspect.ratio=0.5, panel.grid.major = element_blank(), panel.grid.minor = element_blank())
-
-ggplot(dat.merge.rbind %>% filter(type == "dbl" & umap1.shift > -2.5) %>% arrange(label.cont), aes(x = umap1.shift, y = umap2.scale, color = label.cont, group = cell)) +
-  geom_point() +
-  geom_path(alpha = 0.05) +
-  theme_bw() +
-  ggtitle(paste(jmarks, collapse = "_")) +
-  scale_color_viridis_c() +
-  theme(aspect.ratio=0.5, panel.grid.major = element_blank(), panel.grid.minor = element_blank())
-
-
-
 
 # Do transfer but one cell at a time  -------------------------------------
 
@@ -199,6 +149,8 @@ CellToNearestNeighbors <- function(xvec, xmat, jmeth = "euclidean"){
   return(xdist.sort)
 }
 
+nnearest <- 30
+jmark <- jmarks[[1]]
 
 topics.mat1 <- tm.lst[[jmark]]$topics
 topics.mat2 <- out.lst.lst[[jmark]]$out.lda.predict$topics
@@ -249,14 +201,34 @@ dat.merge.rbind2 <- rbind(dat.merge.rbind.single,dat.merge.rbind.dbl)
 cbPalette <- c("#696969", "#32CD32", "#56B4E9", "#FFB6C1", "#F0E442", "#0072B2", "#D55E00", "#CC79A7", "#006400", "#0b1b7f", "#ff9f7d", "#eb9d01", "#7fbedf")
 assertthat::assert_that(length(cbPalette) == length(unique(cbPalette)))
 
-m.clsts <- ggplot(dat.merge.rbind2 %>% filter(mark == jmark), aes(x = umap1, y = umap2, color = cluster)) +
+m.clsts <- ggplot(dat.merge.rbind2 %>% filter(mark == jmarks[[1]]), aes(x = umap1, y = umap2, color = cluster)) +
   geom_point() +
   scale_color_manual(values = cbPalette) +
   theme_bw() +
-  facet_wrap(~type) +
   theme(aspect.ratio=1, panel.grid.major = element_blank(), panel.grid.minor = element_blank())
 
-print(m.clsts)
+
+
+# Annotate from before  ---------------------------------------------------
+
+inf.meta.proj <- "/home/jyeung/hub_oudenaarden/jyeung/data/dblchic/gastrulation/from_analysis/scchix_downstream_plots/celltyping_after_scchix/var_filtered_manual2nocenter_K36_K9m3_K36-K9m3/celltyping_K36_first_try.2021-08-02.txt"
+dat.meta.proj <- fread(inf.meta.proj)
+
+cell2celltype.proj <- hash::hash(dat.meta.proj$cell, dat.meta.proj$celltype)
+
+jcheck <- subset(dat.merge.rbind2, mark == "K36" & type == "single")
+jcheck$celltype.check <- sapply(jcheck$cell, function(x) AssignHash(x, cell2celltype.proj, null.fill = x))
+
+m.check <- ggplot(jcheck, aes(x = umap1, y = umap2, color = celltype.check)) +
+  geom_point() +
+  theme_bw() +
+  theme(aspect.ratio=1, panel.grid.major = element_blank(), panel.grid.minor = element_blank()) +
+  scale_color_manual(values = cbPalette)
+
+multiplot(m.clsts, m.check, cols = 2)
+
+# bad.clsts <- c("cluster3", "cluster6")
+
 
 
 # Annotate clusters  ------------------------------------------------------
@@ -267,39 +239,38 @@ print(m.clsts)
 
 # topic10 = cluster6 = "erythroid"
 clst.annots <- list()
-clst.annots["cluster3"] <- "WhiteBloodCells"
 clst.annots["cluster4"] <- "Erythroid"
+clst.annots["cluster9"] <- "EndothelialandWhiteBloodCells"
+clst.annots["cluster1"] <- "Epithelial"
+clst.annots["cluster8"] <- "Neurons"
+clst.annots["cluster10"] <- "ConnectiveTissueProg"
+# clst.annots["cluster9"] <- "WhiteBloodCells"
+clst.annots["cluster2"] <- "NeuralTubeNeuralProgs"
+clst.annots["cluster7"] <- "Stromal"
+clst.annots["cluster6"] <- "SchwannCellPrecusor"
 
-clst.annots["cluster1"] <- "Early"
-clst.annots["cluster6"] <- "Intermediate1"
-clst.annots["cluster5"] <- "Intermediate2"
-clst.annots["cluster2"] <- "Late"
-
-#   mutate(cluster = gsub("cluster6|cluster5", "middle", x = cluster),
-#          cluster = gsub("cluster1", "early", x = cluster),
-#          cluster = gsub("cluster2", "late", x = cluster))
-
+# merge cluster5 and cluster8 into neural progs
+clst.annots["cluster3"] <- "NeuralTubeNeuralProgs2"
+clst.annots["cluster5"] <- "NeuralTubeNeuralProgs3"
 
 clst.annots.hash <- hash(clst.annots)
 
-cells.keep <- subset(dat.merge.rbind2, mark == jmark & cluster == "cluster2")$cell
-print(head(cells.keep))
-
-ggplot(dat.merge.rbind2 %>% filter(mark == jmark) %>% mutate(cluster = ifelse(cell %in% cells.keep, "InCluster", "NotInCluster")),
+jclst <- "cluster10"
+ggplot(dat.merge.rbind2 %>% filter(mark == jmarks[[1]]) %>% mutate(cluster = ifelse(cluster == jclst, clst.annots[[jclst]], "NotInCluster")),
        aes(x = umap1, y = umap2, color = cluster)) +
   geom_point() +
-  ggtitle(jmark) +
+  ggtitle(jclst, clst.annots[[jclst]]) +
   scale_color_manual(values = cbPalette) +
   theme_bw() +
   # facet_wrap(~type) +
   theme(aspect.ratio=1, panel.grid.major = element_blank(), panel.grid.minor = element_blank())
 
 # reannotate
-dat.merge.annot <- subset(dat.merge.rbind2, mark == jmark) %>%
+dat.merge.k36 <- subset(dat.merge.rbind2, mark == "K36") %>%
   rowwise() %>%
   mutate(celltype = AssignHash(cluster, clst.annots, null.fill = cluster))
 
-m.annot <- ggplot(dat.merge.annot, aes(x = umap1, y = umap2, color = celltype),
+m.annot <- ggplot(dat.merge.k36, aes(x = umap1, y = umap2, color = celltype),
        aes(x = umap1, y = umap2, color = cluster)) +
   geom_point() +
   scale_color_manual(values = cbPalette) +
@@ -309,21 +280,19 @@ m.annot <- ggplot(dat.merge.annot, aes(x = umap1, y = umap2, color = celltype),
 
 print(m.annot)
 
-dat.merge.annot <- dat.merge.annot %>%
-  dplyr::rename(cluster.louvain = cluster,
-                cluster = celltype)
 
 # Write meta data ---------------------------------------------------------
 
+outmain <- "/home/jyeung/hub_oudenaarden/jyeung/data/dblchic/gastrulation/from_analysis/scchix_downstream_plots/celltyping_after_scchix"
 outdir <- file.path(outmain, jname)
 dir.create(outdir)
 
 outf <- file.path(outdir, paste0("celltyping_", jmark, "_first_try.", Sys.Date(), ".txt"))
 outpdf <- file.path(outdir, paste0("celltyping_", jmark, "_first_try.", Sys.Date(), ".pdf"))
-fwrite(x = dat.merge.annot, file = outf, sep = "\t")
+
+fwrite(x = dat.merge.k36, file = outf, sep = "\t")
 
 pdf(outpdf, useDingbats = FALSE)
   print(m.clsts)
   print(m.annot)
 dev.off()
-

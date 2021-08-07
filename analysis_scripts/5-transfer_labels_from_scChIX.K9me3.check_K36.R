@@ -379,8 +379,8 @@ outmain <- "/home/jyeung/hub_oudenaarden/jyeung/data/dblchic/gastrulation/from_a
 outdir <- file.path(outmain, jname)
 dir.create(outdir)
 
-outf <- file.path(outdir, paste0("celltyping_K36_first_try.", Sys.Date(), ".txt"))
-outpdf <- file.path(outdir, paste0("celltyping_K36_first_try.", Sys.Date(), ".pdf"))
+outf <- file.path(outdir, paste0("celltyping_", jmark, "_first_try.", Sys.Date(), ".txt"))
+outpdf <- file.path(outdir, paste0("celltyping_", jmark, "_first_try.", Sys.Date(), ".pdf"))
 fwrite(x = dat.merge.k36, file = outf, sep = "\t")
 
 pdf(outpdf, useDingbats = FALSE)
