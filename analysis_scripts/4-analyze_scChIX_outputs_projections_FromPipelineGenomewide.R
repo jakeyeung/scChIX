@@ -46,14 +46,15 @@ hubprefix <- "/home/jyeung/hub_oudenaarden"
 # jdate <- "2021-07-22"
 # jquant <- "manual2noblood"
 
-jdate <- "2021-07-23"
-jquant <- "manual2nocenter"
+# jdate <- "2021-07-23"
+# jquant <- "manual2nocenter"
 
-jdate <- "2021-07-24"
-jquant <- "manual2nocenternoE8"
+# jdate <- "2021-07-24"
+# jquant <- "manual2nocenternoE8"
 
-# jdate <- "2021-07-17"
-# jquant <- "0.3"
+jdate <- "2021-07-29"
+jquant <- "manual2nocenternoE8unifyK36"
+
 
 jmark1 <- "K36"; jmark2 <- "K27"; jmarks <- c(jmark1, jmark2); jmarkdbl <- paste(jmark1, jmark2, sep = "-")
 # jmark1 <- "K36"; jmark2 <- "K9m3"; jmarks <- c(jmark1, jmark2); jmarkdbl <- paste(jmark1, jmark2, sep = "-")
