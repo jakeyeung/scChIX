@@ -1,7 +1,8 @@
 # Jake Yeung
-# Date of Creation: 2021-07-24
-# File: ~/projects/scChIX/analysis_scripts/5-transfer_labels_from_scChIX.K27.R
+# Date of Creation: 2021-08-15
+# File: ~/projects/scChIX/analysis_scripts/5-transfer_labels_from_scChIX.K27.otherbins.R
 #
+
 
 rm(list=ls())
 
@@ -32,37 +33,12 @@ hubprefix <- "/home/jyeung/hub_oudenaarden"
 
 # Load matrix  ------------------------------------------------------------
 
-# jquants <- c("0.15", "0.2")
-# jquants <- c("0.2")
-# jquants <- c("0.15")
-# jquants <- c("0.15")
 
-# jdate <- "2021-07-16"
-# jquant <- "0.15"
 
-# jdate <- "2021-07-19"
-# jquant <- "manual"
-
-# jdate <- "2021-07-22"
-# jquant <- "manual2noblood"
-
-# jdate <- "2021-07-20"
-# jquant <- "manual2"
-
-# jdate <- "2021-07-23"
-# jquant <- "manual2nocenter"
-
-# jdate <- "2021-07-24"
-# jquant <- "manual2nocenternoE8"
-
-jdate <- "2021-07-29"
+jdate <- "2021-08-14"
 jquant <- "manual2nocenternoE8unifyK36"
 
-# jdate <- "2021-08-12"
-# jquant <- "manual2nocenternoE8unifyK36"
-
 jmark1 <- "K36"; jmark2 <- "K27"; jmarks <- c(jmark1, jmark2); jmarkdbl <- paste(jmark1, jmark2, sep = "-")
-# jmark1 <- "K36"; jmark2 <- "K9m3"; jmarks <- c(jmark1, jmark2); jmarkdbl <- paste(jmark1, jmark2, sep = "-")
 
 names(jmarks) <- jmarks
 jmarkdbl <- paste(c(jmark1, jmark2), collapse = "-")
@@ -72,13 +48,16 @@ jstr <- paste(c(jmarks, jmarkdbl), collapse = "_")
 jprefix <- "var_filtered"
 jname <- paste(jprefix, jquant, jstr, sep = "_")
 
-infrdata <- file.path(hubprefix, paste0("jyeung/data/dblchic/gastrulation/scchix_pipeline_from_LDA/scchix_outputs_objs/", jname, "/unmix_scchix_inputs_clstr_by_celltype_", jmarkdbl, ".removeNA_FALSE.RData"))
+# jbinsize <- "genebody50kbmax"
+jbinsize <- 40000L
+infrdata <- file.path(hubprefix, paste0("jyeung/data/dblchic/gastrulation/scchix_pipeline_from_LDA_binsize_", jbinsize, "/scchix_outputs_objs/", jname, "/unmix_scchix_inputs_clstr_by_celltype_", jmarkdbl, ".removeNA_FALSE.RData"))
 assertthat::assert_that(file.exists(infrdata))
+
 
 
 # jsuffix <- "dbl_k36_k9m3_cleaned"
 infs <- lapply(jmarks, function(jmark){
-  inf <- paste0("/home/jyeung/hub_oudenaarden/jyeung/data/dblchic/gastrulation/LDA_scchix_outputs/from_pipeline/", jname, "/", jstr, "/Gastru_Unmixed_DblMark.", jname, ".", jmark, ".RData")
+  inf <- paste0("/home/jyeung/hub_oudenaarden/jyeung/data/dblchic/gastrulation/LDA_scchix_outputs/from_pipeline_binsize_", jbinsize, "/", jname, "/", jstr, "/Gastru_Unmixed_DblMark.", jname, ".", jmark, ".RData")
   assertthat::assert_that(file.exists(inf))
   return(inf)
 })
@@ -86,7 +65,7 @@ infs <- lapply(jmarks, function(jmark){
 
 # load mats
 # metamain <- file.path(paste0("/home/jyeung/hub_oudenaarden/jyeung/data/dblchic/gastrulation/from_analysis/rds_objs_celltyping_", jprefix))
-metamain <- file.path(hubprefix, paste0("jyeung/data/dblchic/gastrulation/scchix_pipeline_from_LDA/objs_from_LDA/", jname))
+metamain <- file.path(hubprefix, paste0("jyeung/data/dblchic/gastrulation/scchix_pipeline_from_LDA_binsize_", jbinsize, "/objs_from_LDA/", jname))
 assertthat::assert_that(dir.exists(metamain))
 
 dat.meta.lst <- lapply(jmarks, function(jmark){

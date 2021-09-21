@@ -22,6 +22,8 @@ library(topicmodels)
 
 library(scchicFuncs)
 
+library(JFuncs)
+
 jsettings <- umap.defaults
 jsettings$n_neighbors <- 30
 jsettings$min_dist <- 0.1
@@ -35,11 +37,11 @@ hubprefix <- "/home/jyeung/hub_oudenaarden"
 
 
 
-# jdate <- "2021-07-29"
-# jquant <- "manual2nocenternoE8unifyK36"
+jdate <- "2021-07-29"
+jquant <- "manual2nocenternoE8unifyK36"
 
-jdate <- "2021-08-03"
-jquant <- "manual2nocenternoE8unifyK36noneu"
+# jdate <- "2021-08-03"
+# jquant <- "manual2nocenternoE8unifyK36noneu"
 
 jmark1 <- "K36"; jmark2 <- "K27"; jmarks <- c(jmark1, jmark2); jmarkdbl <- paste(jmark1, jmark2, sep = "-")
 
@@ -133,7 +135,7 @@ dat.merge.rbind <- bind_rows(dat.umap.merge.lst) %>%
 
 
 
-ggplot(dat.merge.rbind, aes(x = umap1.shift, y = 1 * umap2.scale, group = cell, color = stage)) +
+m.links <- ggplot(dat.merge.rbind, aes(x = umap1.shift, y = 1 * umap2.scale, group = cell, color = stage)) +
   geom_point() +
   ggtitle("Double + single cells") +
   geom_path(alpha = 0.05) +
@@ -210,6 +212,15 @@ m.clsts <- ggplot(dat.merge.rbind2 %>% filter(mark == jmarks[[1]]), aes(x = umap
   theme_bw() +
   facet_wrap(~type) +
   theme(aspect.ratio=1, panel.grid.major = element_blank(), panel.grid.minor = element_blank())
+
+
+
+m.links2 <- ggplot(dat.merge.rbind2, aes(x = umap1.shift, y = 1 * umap2.scale, group = cell, color = cluster)) +
+  geom_point() +
+  ggtitle("Double + single cells") +
+  geom_path(alpha = 0.05) +
+  theme_bw() +
+  theme(aspect.ratio=0.5, panel.grid.major = element_blank(), panel.grid.minor = element_blank())
 
 
 
@@ -292,10 +303,14 @@ dir.create(outdir)
 
 outf <- file.path(outdir, paste0("celltyping_", jmark, "_first_try.", Sys.Date(), ".txt"))
 outpdf <- file.path(outdir, paste0("celltyping_", jmark, "_first_try.", Sys.Date(), ".pdf"))
+outf2 <- file.path(outdir, paste0("metamerged_bothmarks_", jmark, "_first_try.", Sys.Date(), ".txt"))
 
 fwrite(x = dat.merge.k36, file = outf, sep = "\t")
+fwrite(x = dat.merge.rbind2, file = outf2, sep = "\t")
 
 pdf(outpdf, useDingbats = FALSE)
   print(m.clsts)
   print(m.annot)
+  print(m.links)
+  print(m.links2)
 dev.off()

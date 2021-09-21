@@ -19,48 +19,6 @@ library(topicmodels)
 # Functions ---------------------------------------------------------------
 
 
-MeanAcrossClusters <- function(count.mat, cnames.keep.lst, jfunc = rowMeans){
-  count.mat <- as.matrix(count.mat)
-  count.vecs <- lapply(cnames.keep.lst, function(cnames.keep){
-    cnames.keep.i <- which(colnames(count.mat) %in% cnames.keep)
-    assertthat::assert_that(length(cnames.keep.i) > 0)
-    jfunc(count.mat[, cnames.keep.i])
-  })
-  return(count.vecs)
-}
-
-MergeMarksEstimateOverlap <- function(bin.dat, mat.prob, mat.dbl){
-  # bin.dat <- ctype.sim.counts.lst$A$bin.data
-  bin.dat <- bin.dat[gtools::mixedorder(bin.dat$Bin), ]
-  # mat.prob <- mat.prob[, grepl(grepsuffix, colnames(mat.prob))]
-  # mat.dbl <- mats$`mark1-mark2`[, grepl(grepsuffix, colnames(mats$`mark1-mark2`))]
-
-  # compare with ground truth
-  jnbins <- nrow(bin.dat)
-  frac.swap <- ctype.params.lst$A$frac.mutual.excl / 2
-  bottom.bins <- (bin.dat %>% dplyr::arrange(BinMean))$Bin[1:(jnbins * frac.swap)]
-  top.bins <- (bin.dat %>% dplyr::arrange(desc(BinMean)))$Bin[1:(jnbins * frac.swap)]
-
-
-  bin.means.A1 <- data.frame(mark = "mark1", BinMean = bin.dat$BinMean, annot = bin.dat$annot, stringsAsFactors = FALSE)
-  rownames(bin.means.A1) <- bin.dat$Bin
-
-  bin.means.A2 <- data.frame(mark = "mark2", BinMean = bin.dat$BinMean, stringsAsFactors = FALSE)
-  rownames(bin.means.A2) <- bin.dat$Bin
-
-  bin.means.A2 <- scChIX::SwapBins(ctype1.sim.counts.b = bin.means.A2, top.bins = top.bins, bottom.bins = bottom.bins, frac.swap = frac.swap)
-
-  bin.means.A1$Bin <- rownames(bin.means.A1)
-  bin.means.A2$Bin <- rownames(bin.means.A2)
-
-  bin.means.A.merged <- left_join(bin.means.A1, bin.means.A2, by = "Bin") %>%
-    rowwise() %>%
-    mutate(BinMean.dbl = (BinMean.x) / (BinMean.x + BinMean.y))
-  return(bin.means.A.merged)
-}
-
-
-
 
 # Constants ---------------------------------------------------------------
 
@@ -72,6 +30,12 @@ cbPalette <- c("#696969", "#56B4E9", "#F0E442", "#0072B2", "#D55E00", "#CC79A7",
 dmain <- file.path(hubprefix, "jyeung/data/dblchic/simulation_data.all_mut_excl")
 assertthat::assert_that(dir.exists(dmain))
 
+outdir <- file.path(hubprefix, "jyeung/data/dblchic/from_cluster/simulation_data_downstream/plots")
+assertthat::assert_that(dir.exists(outdir))
+
+outpdf <- file.path(outdir, paste0("plot_downstream_overlaps_all_mutually_exclusive.pdf"))
+
+pdf(file = outpdf, useDingbats = FALSE)
 
 # Load sim params ---------------------------------------------------------
 
@@ -206,7 +170,6 @@ JFuncs::multiplot(m.meta.ctype[[1]], m.meta.ctype[[2]], m.meta.ctype[[3]], cols 
 JFuncs::multiplot(m.meta.cluster[[1]], m.meta.cluster[[2]], m.meta.cluster[[3]], cols = 3)
 
 
-
 # Connect the UMAPs  ------------------------------------------------------
 
 
@@ -323,9 +286,7 @@ jctype <- "A"
 
 bin.means.merged.lst <- lapply(jctypes, function(jctype){
   grepsuffix <- paste0("_", jctype, "$")
-  bin.means.merged <- MergeMarksEstimateOverlap(bin.dat = ctype.sim.counts.lst[[jctype]]$bin.data,
-                                                mat.prob = mat.prob[, grepl(grepsuffix, colnames(mat.prob))],
-                                                mat.dbl = mats$`mark1-mark2`[, grepl(grepsuffix, colnames(mats$`mark1-mark2`))])
+  bin.means.merged <- MergeMarksEstimateOverlap(bin.dat = ctype.sim.counts.lst[[jctype]]$bin.data)
   bin.means.merged$ctype <- jctype
   return(bin.means.merged)
 })

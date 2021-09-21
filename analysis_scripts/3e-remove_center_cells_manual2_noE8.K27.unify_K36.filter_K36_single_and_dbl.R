@@ -1,8 +1,7 @@
 # Jake Yeung
-# Date of Creation: 2021-07-29
-# File: ~/projects/scChIX/analysis_scripts/3e-remove_center_cells_manual2_noE8.K27.unify_K36.R
+# Date of Creation: 2021-08-02
+# File: ~/projects/scChIX/analysis_scripts/3e-remove_center_cells_manual2_noE8.K27.unify_K36.filter_K36_single_and_dbl.R
 #
-
 
 
 rm(list=ls())
@@ -14,7 +13,6 @@ library(data.table)
 library(Matrix)
 
 
-
 # Load mat  ---------------------------------------------------------------
 
 jmarks <- c("K36", "K27", "K36-K27")
@@ -24,7 +22,7 @@ jstr <- paste(jmarks, collapse = "_")
 prefix <- "var_filtered_manual2nocenter"
 jdate <- "2021-07-23"
 
-prefix.out <- "var_filtered_manual2nocenternoE8"
+prefix.out <- "var_filtered_manual2nocenternoE8noneu"
 
 hubprefix <- "/home/jyeung/hub_oudenaarden"
 
@@ -78,6 +76,29 @@ good.cells.lst <- lapply(jmarks, function(jmark){
   good.cells <- subset(dat.metas[[jmark]], ! cluster %in% bad.clsts.lst[[jmark]] & stage != "E8")$cell
 })
 
+
+# Further define cells based after projecting cells  ----------------------
+
+inf.meta.proj <- "/home/jyeung/hub_oudenaarden/jyeung/data/dblchic/gastrulation/from_analysis/scchix_downstream_plots/celltyping_after_scchix/var_filtered_manual2nocenter_K36_K9m3_K36-K9m3/celltyping_K36_first_try.2021-08-02.txt"
+dat.meta.proj <- fread(inf.meta.proj)
+
+bad.ctypes <- c("NeuralTubeNeuralProgs2", "NeuralTubeNeuralProgs3")
+good.cells.noneu <- subset(dat.meta.proj, !celltype %in% bad.ctypes)$cell
+
+good.cells.k36.before <- good.cells.lst$K36
+print("K36 before")
+print(length(good.cells.k36.before))
+good.cells.k36.after <- good.cells.k36.before[good.cells.k36.before %in% good.cells.noneu]
+print("K36 after")
+print(length(good.cells.k36.after))
+good.cells.lst$`K36` <- good.cells.k36.after
+
+# no filtering for K27 because we loaded a K36-K9 dataset
+
+# Continue ----------------------------------------------------------------
+
+
+
 mats.filt.lst <- lapply(jmarks, function(jmark){
   jcells.keep <- good.cells.lst[[jmark]]
   cols.keep <- colnames(mats.lst[[jmark]]) %in% jcells.keep
@@ -99,7 +120,6 @@ m.lst <- lapply(jmarks, function(jmark){
     ggtitle(jmark) +
     theme(aspect.ratio=1, panel.grid.major = element_blank(), panel.grid.minor = element_blank())
 })
-
 
 for (jmark in jmarks){
   print(jmark)
