@@ -1,0 +1,131 @@
+# config file containing samples and parameters 
+configfile: "config.yaml" 
+# # marks=["K36", "K9m3"]
+# marksall=["K36", "K9m3", "K36-K9m3"]
+# outmain="/hpc/hub_oudenaarden/jyeung/data/dblchic/gastrulation/snakemake_runs/K36_K9m3_K36-K9m3"
+# mark1=
+
+# rules
+
+rule all:
+  # input: expand("{outmain}/snakemake_outputs/projection_output.{{mark}}.RData", mark=marks, outmain=outmain)
+  input: 
+    config["outmain"] + "/snakemake_outputs/projection_output." + config["mark1"] +  ".RData",
+    config["outmain"] + "/snakemake_outputs/projection_output." + config["mark2"] + ".RData"
+
+# rule LDA_init:
+#   input: 
+#     expand("{outmain}/snakemake_inputs/countmats/countmat_var_filt.{markall}.rds", markall=marksall, outmain=outmain)
+#   output: 
+#     expand("{outmain}/snakemake_outputs/LDA_outputs_init/ldaOut.countmat_var_filt.{markall}.Robj", markall=marksall, outmain=outmain)
+#   shell:
+#     "bash {projdir}/0-run_LDA_initial.snakemake.sh {input} {output}"
+
+rule LDA_init1:
+  input: 
+    config["outmain"] + "/snakemake_inputs/countmats/countmat_var_filt." + config["mark1"] + ".rds"
+  output: 
+    inflda1=config["outmain"] + "/snakemake_outputs/LDA_outputs_init/ldaOut.countmat_var_filt." + config["mark1"] + ".Robj"
+  shell:
+    "bash " + config["projdir"] + "/0-run_LDA_initial.snakemake.sh {input} {output.inflda1}"
+
+rule LDA_init2:
+  input: 
+    config["outmain"] + "/snakemake_inputs/countmats/countmat_var_filt." + config["mark2"] + ".rds"
+  output: 
+    inflda2=config["outmain"] + "/snakemake_outputs/LDA_outputs_init/ldaOut.countmat_var_filt." + config["mark2"] + ".Robj"
+  shell:
+    "bash " + config["projdir"] + "/0-run_LDA_initial.snakemake.sh {input} {output.inflda2}"
+
+rule LDA_initdbl:
+  input: 
+    config["outmain"] + "/snakemake_inputs/countmats/countmat_var_filt." + config["markdbl"] + ".rds"
+  output: 
+    infldadbl=config["outmain"] + "/snakemake_outputs/LDA_outputs_init/ldaOut.countmat_var_filt." + config["markdbl"] + ".Robj"
+  shell:
+    "bash " + config["projdir"] + "/0-run_LDA_initial.snakemake.sh {input} {output.infldadbl}"
+
+rule setup_objs_after_LDA:
+  input: 
+    inflda1=config["outmain"] + "/snakemake_outputs/LDA_outputs_init/ldaOut.countmat_var_filt." + config["mark1"] + ".Robj",
+    inflda2=config["outmain"] + "/snakemake_outputs/LDA_outputs_init/ldaOut.countmat_var_filt." + config["mark2"] + ".Robj",
+    infldadbl=config["outmain"] + "/snakemake_outputs/LDA_outputs_init/ldaOut.countmat_var_filt." + config["markdbl"] + ".Robj"
+  output:
+    outdir=directory(config["outmain"] + "/snakemake_outputs/objs_from_LDA"),
+    countmat1=config["outmain"] + "/snakemake_outputs/objs_from_LDA/countmat_output_filt." + config["mark1"] + ".rds",
+    countmat2=config["outmain"] +"/snakemake_outputs/objs_from_LDA/countmat_output_filt." + config["mark2"] + ".rds",
+    countmatdbl=config["outmain"] +"/snakemake_outputs/objs_from_LDA/countmat_output_filt." + config["markdbl"] + ".rds",
+    inflda1=config["outmain"] + "/snakemake_outputs/objs_from_LDA/lda_output_filt." + config["mark1"] + ".rds",
+    inflda2=config["outmain"] + "/snakemake_outputs/objs_from_LDA/lda_output_filt." + config["mark2"] + ".rds",
+    infldadbl=config["outmain"] + "/snakemake_outputs/objs_from_LDA/lda_output_filt." + config["markdbl"] + ".rds",
+    inf1meta=config["outmain"] + "/snakemake_outputs/objs_from_LDA/celltyping_output_filt." + config["mark1"] + ".rds",
+    inf2meta=config["outmain"] + "/snakemake_outputs/objs_from_LDA/celltyping_output_filt." + config["mark2"] + ".rds",
+    infdblmeta=config["outmain"] + "/snakemake_outputs/objs_from_LDA/celltyping_output_filt." + config["markdbl"] + ".rds"
+  shell:
+    "bash " + config["projdir"] + "/1-run.setup_lda_countmat_metas.snakemake.sh " + config["mark1"] + " " + config["mark2"] + " " + config["markdbl"] + " {input.inflda1} {input.inflda2} {input.infldadbl} {output.outdir} " + config["nneighbors"]
+
+rule setup_objs_for_scchix:
+  input:
+    inf1meta=config["outmain"] + "/snakemake_outputs/objs_from_LDA/celltyping_output_filt." + config["mark1"] + ".rds",
+    inf2meta=config["outmain"] + "/snakemake_outputs/objs_from_LDA/celltyping_output_filt." + config["mark2"] + ".rds",
+    infdblmeta=config["outmain"] + "/snakemake_outputs/objs_from_LDA/celltyping_output_filt." + config["markdbl"] + ".rds",
+    inflda1=config["outmain"] + "/snakemake_outputs/objs_from_LDA/lda_output_filt." + config["mark1"] + ".rds",
+    inflda2=config["outmain"] + "/snakemake_outputs/objs_from_LDA/lda_output_filt." + config["mark2"] + ".rds",
+    countmatdbl=config["outmain"] +"/snakemake_outputs/objs_from_LDA/countmat_output_filt." + config["markdbl"] + ".rds"
+  output:
+    # outprefix="${outdir}/scchix_inputs_clstr_by_celltype_${markdbl}"
+    scchix_input=config["outmain"] + "/snakemake_outputs/scchix_inputs_objs/scchix_inputs_clstr_by_celltype_" + config["markdbl"] + ".removeNA_FALSE.RData"
+  shell:
+    "bash " + config["projdir"] + "/2-run.setup_objs_for_unmixing.snakemake.sh " + config["mark1"] + " " + config["mark2"] + " {input.inf1meta} {input.inf2meta} {input.infdblmeta} {input.inflda1} {input.inflda2} {input.countmatdbl} " + config["outmain"] + "/snakemake_outputs/scchix_inputs_objs/scchix_inputs_clstr_by_celltype_" + config["markdbl"]
+
+rule run_fits:
+  input:
+    scchix_input=config["outmain"] + "/snakemake_outputs/scchix_inputs_objs/scchix_inputs_clstr_by_celltype_" + config["markdbl"] + ".removeNA_FALSE.RData"
+  output:
+    scchix_output=config["outmain"] + "/snakemake_outputs/scchix_outputs_objs/scchix_inputs_clstr_by_celltype_" + config["markdbl"] + ".RData"
+  threads: 8
+  shell:
+    "bash " + config["projdir"] + "/3-run.load_objs_run_fits.snakemake.sh {input.scchix_input} {output.scchix_output} " + config["ncores"]
+
+rule run_unmixing:
+  input:
+    countmat1=config["outmain"] + "/snakemake_outputs/objs_from_LDA/countmat_output_filt." + config["mark1"] + ".rds",
+    countmat2=config["outmain"] +"/snakemake_outputs/objs_from_LDA/countmat_output_filt." + config["mark2"] + ".rds",
+    scchix_input=config["outmain"] + "/snakemake_outputs/scchix_inputs_objs/scchix_inputs_clstr_by_celltype_" + config["markdbl"] + ".removeNA_FALSE.RData",
+    scchix_output=config["outmain"] + "/snakemake_outputs/scchix_outputs_objs/scchix_inputs_clstr_by_celltype_" + config["markdbl"] + ".RData",
+    infldadbl=config["outmain"] + "/snakemake_outputs/LDA_outputs_init/ldaOut.countmat_var_filt." + config["markdbl"] + ".Robj"
+  output:
+    unmixedmat1=config["outmain"] + "/snakemake_outputs/scchix_unmixing_downstream/scchix_inputs_clstr_by_celltype-unmixed_mat." + config["mark1"] + ".rds",
+    unmixedmat2=config["outmain"] + "/snakemake_outputs/scchix_unmixing_downstream/scchix_inputs_clstr_by_celltype-unmixed_mat." + config["mark2"] + ".rds"
+  shell:
+    "bash " + config["projdir"] + "/4-run_unmixing_downstream_split.snakemake.sh " + config["mark1"] + " " + config["mark2"] + " {input.scchix_input} {input.scchix_output} {input.countmat1} {input.countmat2} {input.infldadbl} " + config["outmain"] + "/snakemake_outputs/scchix_unmixing_downstream/scchix_inputs_clstr_by_celltype"
+    
+
+rule project1:
+  input:
+    infldamark1=config["outmain"] + "/snakemake_outputs/LDA_outputs_init/ldaOut.countmat_var_filt." + config["mark1"] + ".Robj",
+    unmixedmat1=config["outmain"] + "/snakemake_outputs/scchix_unmixing_downstream/scchix_inputs_clstr_by_celltype-unmixed_mat." + config["mark1"] + ".rds"
+  output:
+    config["outmain"] + "/snakemake_outputs/projection_output." + config["mark1"] + ".RData"
+  shell:
+    "bash " + config["projdir"] + "/5-project_LDA_after_unmixing.snakemake.sh {input.infldamark1} {input.unmixedmat1} {output}"
+
+rule project2:
+  input:
+    infldamark2=config["outmain"] + "/snakemake_outputs/LDA_outputs_init/ldaOut.countmat_var_filt." + config["mark2"] + ".Robj",
+    unmixedmat2=config["outmain"] + "/snakemake_outputs/scchix_unmixing_downstream/scchix_inputs_clstr_by_celltype-unmixed_mat." + config["mark2"] + ".rds"
+  output:
+    config["outmain"] + "/snakemake_outputs/projection_output." + config["mark2"] + ".RData"
+  shell:
+    "bash " + config["projdir"] + "/5-project_LDA_after_unmixing.snakemake.sh {input.infldamark2} {input.unmixedmat2} {output}"
+
+# rule project:
+#   input:
+#     infldamark=expand("config["outmain"]/snakemake_outputs/LDA_outputs_init/ldaOut.countmat_var_filt.{{mark}}.Robj", mark=marks, outmain=outmain),
+#     countmatmark=expand("config["outmain"]/snakemake_outputs/objs_from_LDA/countmat_output_filt.{{mark}}.rds", mark=marks, outmain=outmain)
+#   output:
+#     projectoutput=expand("config["outmain"]/snakemake_outputs/projection_output.{{mark}}.RData", mark=marks, outmain=outmain)
+#   shell:
+#     "bash 5-run_LDA_after_unmixing.snakemmake.sh {infldamark} {countmatmark} {projectoutput}"
+
+
