@@ -1,0 +1,10 @@
+# Sample names
+mark1: "mark1"
+mark2: "mark2"
+markdbl: "mark1-mark2"
+# Directories
+outmain: "/hpc/hub_oudenaarden/jyeung/data/dblchic/simulation_data"
+# projdir: "/home/hub_oudenaarden/jyeung/projects/snakemake_workflow_gastru_scchix/scripts"
+projdir: "/home/hub_oudenaarden/jyeung/projects/scChIX/snakemake_workflow/scripts"
+ncores: "4"
+nneighbors: "150"
