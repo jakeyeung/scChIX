@@ -1,0 +1,12 @@
+{
+    "__default__": {
+        "time": "24:00:00",
+        "N": 1,
+        "mem": "72G",
+        "log": "logs/{rule}/{rule}.{wildcards}.log",
+    },
+    "run_fits": {
+        "mem": "32G",
+        "N": 4
+    }
+}
