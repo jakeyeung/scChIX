@@ -35,24 +35,18 @@ parser <- ArgumentParser()
 # by default ArgumentParser will add an help option 
 parser$add_argument('inpath', metavar='INFILE',
                                             help='.RData where count mat is in count.dat$counts or .rds object to count mat')
-parser$add_argument('outdir', metavar='OUTDIR',
-                                            help='Out directory')
+parser$add_argument('outpath', metavar='OUTFILE',
+                                            help='Output .Robj of LDA outputs')
 parser$add_argument("-t", "--topics", metavar='Comma sep string', required=TRUE,
                                             help='CSV of topics to iterate')
 parser$add_argument("-b", "--binarizemat", action="store_true", default=FALSE,
                         help="Binarize matrix")
-parser$add_argument("-n", "--projname", metavar='Name of project', default="MyProj",
-                        help="Name of project for naming pdf and Robj output. Make this meaningful otherwise it will overwrite projects!")
 parser$add_argument("-v", "--verbose", action="store_true", default=TRUE,
                         help="Print extra output [default]")
-parser$add_argument("--SkipPlots", action="store_true", default=FALSE,
-                        help="Do not make plots, default FALSE")
 parser$add_argument("--RemoveDupRows", action="store_true", default=FALSE,
                         help="Remove duplicated rows, default FALSE")
 parser$add_argument("--RemoveEmptyCells", action="store_true", default=FALSE,
                         help="Remove empty cols, default FALSE")
-parser$add_argument("--SkipMeanVar", action="store_true", default=FALSE,
-                        help="Do not make plots, default FALSE")
                                         
 # get command line options, if help option encountered print help and exit,
 # otherwise if options not found on command line then set defaults, 
@@ -70,16 +64,13 @@ print("input args:")
 print(args)
 
 inpath <- args$inpath
-outdir <- args$outdir
+outpath <- args$outpath
 topic.vec <- as.numeric(StrToVector(args$topics, delim = ","))
 binarizemat <- args$binarizemat
-projname <- args$projname  # helps with writing pdf and Robj output
 
 print(paste("Will iterate through", length(topic.vec), "Ks"))
 print(topic.vec)
 
-plotpath <- file.path(outdir, paste0("plots.", projname, ".pdf"))
-outpath <- file.path(outdir, paste0("ldaOut.", projname, ".Robj"))
 
 # Load counts -------------------------------------------------------------
 

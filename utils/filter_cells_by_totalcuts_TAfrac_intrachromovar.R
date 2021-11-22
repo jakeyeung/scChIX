@@ -284,6 +284,15 @@ dat.vars.raw.lst <- lapply(jnames, function(jname){
 
 # Plot the var  -----------------------------------------------------------
 
+m.var.platesmerged.lst <- lapply(jnames, function(jname){
+  dat.vars.raw <- dat.vars.raw.lst[[jname]]
+  m.var <- ggplot(dat.vars.raw, aes(x = ncuts, y = ncuts.var, color = good.cells.var)) + geom_point() + 
+    theme_bw() + theme(aspect.ratio=1, panel.grid.major = element_blank(), panel.grid.minor = element_blank()) + 
+    scale_x_log10() + scale_y_log10()  +  ggtitle(jname) + 
+    geom_hline(yintercept = c(varmin.counts.hash[[jname]],  varmax.counts.hash[[jname]]))
+ return(m.var) 
+})
+
 m.var.lst <- lapply(jnames, function(jname){
   dat.vars.raw <- dat.vars.raw.lst[[jname]]
   m.var <- ggplot(dat.vars.raw, aes(x = ncuts, y = ncuts.var, color = good.cells.var)) + geom_point() + 
@@ -324,6 +333,7 @@ pdf(pdfout, width = 1440/72, height = 815/72, useDingbats = FALSE)
   print(m.scatter.lst)
   print(m.density.lst)
   print(m.var.lst)
+  print(m.var.platesmerged.lst)
 dev.off()
 
 if (!args$doNotWriteTables){
