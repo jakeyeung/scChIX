@@ -28,14 +28,15 @@ mark1="K36"
 
 # mark2="K27"
 # # mark2="K9m3"
-mark2vec="K27 K9m3"
+# mark2vec="K27 K9m3"
 # mark2vec="K27"
+mark2vec="K9m3"  # for noneu use K9m3 only 
 
 jname="var_filtered"
 # jquant="0.3"
 # jquant="manual2"
 
-jquant="manual2nocenter"
+jquant="manual2nocenternoneu"
 
 for mark2 in $mark2vec; do
   markdbl="${mark1}-${mark2}"

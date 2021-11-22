@@ -25,8 +25,9 @@ jtime='3:00:00'
 rs="/home/hub_oudenaarden/jyeung/projects/scChIX/utils/unmixing_downstream_split_reads_script.UnevenRows.R"
 
 mark1="K36"
-mark2vec="K27 K9m3"
+# mark2vec="K27 K9m3"
 # mark2vec="K27"
+mark2vec="K9m3"
 
 # mark2="K27"
 # mark2="K9m3"
@@ -45,8 +46,11 @@ mark2vec="K27 K9m3"
 # jquant="manual2noblood"
 # jdate="2021-07-22"
 
-jquant="manual2nocenter"
-jdate="2021-07-23"
+# jquant="manual2nocenter"
+# jdate="2021-07-23"
+
+jquant="manual2nocenternoneu"
+jdate="2021-08-03"
 
 for mark2 in $mark2vec; do
 

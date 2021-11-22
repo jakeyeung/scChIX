@@ -16,13 +16,14 @@ bl="/hpc/hub_oudenaarden/jyeung/data/databases/blacklists/mm10.blacklist.copy.so
 bedfile="/hpc/hub_oudenaarden/jyeung/data/databases/refseq/TES_genomewide.neg_strand_bug_fixed.2021-06-27.50kb_max_length.txt"
 [[ ! -e $bedfile ]] && echo "$bedfile not found, exiting" && exit 1
 
-outdir="${inmain}/counts_tables_TSStoTES_50kb_max"
+# outdir="${inmain}/counts_tables_TSStoTES_50kb_max"
+outdir="${inmain}/counts_tables_genebody50kbmax"
 [[ ! -d $outdir ]] && mkdir $outdir
 
 for inbam in `ls -d $inmain/*.bam`; do
     bname=$(basename $inbam)
     bname=${bname}
-    outftab=${outdir}/${bname}.count_table_TES_genomewide.50kb_max_length.txt
+    outftab=${outdir}/${bname}.count_table_genebody50kbmax.txt
     [[ -e $outftab ]] && echo "$outftab found, continuing" && continue
     BNAME=${outdir}/${bname}_sbatch_TES_genomewide_log
     DBASE=$(dirname "${BNAME}")

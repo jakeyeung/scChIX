@@ -24,7 +24,9 @@ inbase="/hpc/hub_oudenaarden/jyeung/data/dblchic/gastrulation/scchix_pipeline_fr
 
 mark1="K36"
 
-mark2vec="K27 K9m3"
+# mark2vec="K27 K9m3"
+# mark2vec="K27"  # for noE8 do K27 only 
+mark2vec="K9m3"  # for noeu do K9me3 only
 # mark2vec="K27"
 # mark2="K9m3"
 # # mark2="K27"
@@ -41,8 +43,14 @@ mark2vec="K27 K9m3"
 # jdate="2021-07-22"
 # jquant="manual2noblood"
 
-jdate="2021-07-23"
-jquant="manual2nocenter"
+# jdate="2021-07-23"
+# jquant="manual2nocenter"
+
+# jdate="2021-07-24"
+# jquant="manual2nocenternoE8"
+
+jdate="2021-08-03"
+jquant="manual2nocenternoneu"
 
 jname="var_filtered"
 

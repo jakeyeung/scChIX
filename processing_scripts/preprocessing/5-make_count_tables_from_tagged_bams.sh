@@ -22,7 +22,10 @@ mapq=40
 bl="/hpc/hub_oudenaarden/jyeung/data/databases/blacklists/mm10.blacklist.copy.sorted.merged.nospikeins.nochromo.bed"
 # bl="/hpc/hub_oudenaarden/jyeung/data/databases/blacklists/mm10.blacklist.copy.sorted.merged.SpikeIns.nochromo.bed"
 
-binsizes="10000 50000"
+# binsizes="10000 50000"
+# binsizes="20000 30000 40000"
+# binsizes="10000"
+binsizes="5000"
 
 # binsize=10000
 for binsize in $binsizes; do

@@ -27,6 +27,7 @@ binsizes="10000 50000"
 outbase="/hpc/hub_oudenaarden/jyeung/data/dblchic/gastrulation/count_tables"
 
 jmark="K27"
+# jmark="K36"
 
 # binsize=10000
 for binsize in $binsizes; do

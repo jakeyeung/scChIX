@@ -29,14 +29,18 @@ jprefix="var_filtered"
 # jquantvec="manual2noblood"
 # jdate="2021-07-22"
 
-jquantvec="manual2nocenter"
-jdate="2021-07-23"
+# jquantvec="manual2nocenter"
+# jdate="2021-07-23"
+
+jquantvec="manual2nocenternoneu"
+jdate="2021-08-03"
 
 jmark1="K36"
 # jmark2="K9m3"
 # jmark2="K27"
 
-jmark2vec="K27 K9m3"
+# jmark2vec="K27 K9m3"
+jmark2vec="K9m3"
 
 for jquant in $jquantvec; do
 
