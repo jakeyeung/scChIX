@@ -13,4 +13,4 @@ rs="/home/hub_oudenaarden/jyeung/projects/scChIX/utils/run_LDA_model3.R"
 inf=$1
 outf=$2
 
-/hpc/hub_oudenaarden/jyeung/software/anaconda3/etc/profile.d/conda.sh; conda activate R3.6; Rscript $rs $inf $outf --topics $topics
+. /hpc/hub_oudenaarden/jyeung/software/anaconda3/etc/profile.d/conda.sh; conda activate R3.6; Rscript $rs $inf $outf --topics $topics
