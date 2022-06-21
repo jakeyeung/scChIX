@@ -1,6 +1,8 @@
 ---
 title: "scChIX example: performing model selection, unmixing double-incubated cells, and linking UMAPs"
-output: rmarkdown::html_vignette
+output:
+  md_document:
+    variant: markdown_github
 vignette: >
   %\VignetteIndexEntry{scChIX-vignette}
   %\VignetteEngine{knitr::rmarkdown}
