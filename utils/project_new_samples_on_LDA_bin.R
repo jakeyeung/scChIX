@@ -88,7 +88,7 @@ if (args$RemoveEmptyCells){
   count.dat$counts <- count.dat$counts[, cells.keep]
   print(ncol(count.dat$counts))
 }
-assertthat::assert_that(class(count.dat$counts) == "dgCMatrix" | class(count.dat$counts) == "matrix")
+assertthat::assert_that(class(count.dat$counts) == "dgCMatrix" | class(count.dat$counts) == "matrix" | class(count.dat$counts) == "dgeMatrix" | class(count.dat$counts) == "dgeMatrix")
 
 if (args$binarizemat){
   print(paste('Max count before binarizing', max(count.dat$counts)))
