@@ -4,6 +4,7 @@
 #
 
 
+
 AnnotateBins2.R4 <- function (terms.mat, top.thres = 0.995, inf.tss = "/Users/yeung/data/scchic/tables/gene_tss_winsize.50000.bed", 
                               txdb = TxDb.Mmusculus.UCSC.mm10.knownGene, annodb = "org.Mm.eg.db", 
                               chromos.keep = c(paste("chr", seq(19), sep = ""), "chrX", 
@@ -65,6 +66,8 @@ AnnotateBins2.R4 <- function (terms.mat, top.thres = 0.995, inf.tss = "/Users/ye
               terms.annot = terms.annot, out2.df.closest = out2.df.closest, 
               terms.filt = terms.filt))
 }
+
+
 ClipLast <- function(x, jsep = "-", jsep.out = NULL){
   # B6-13W1-BM-H3K4me3-1_269 -> B6-13W1-BM-H3K4me3
   if (is.null(jsep.out)){

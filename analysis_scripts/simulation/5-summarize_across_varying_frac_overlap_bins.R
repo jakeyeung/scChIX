@@ -16,19 +16,22 @@ library(Matrix)
 # Load downstream objs ----------------------------------------------------
 
 
-hubprefix <- "/home/jyeung/hub_oudenaarden"
+# hubprefix <- "/home/jyeung/hub_oudenaarden"
+# hubprefix <- "/nfs/scistore12/hpcgrp/jyeung/data_from_Hubrecht/hpc_hub_oudenaarden/scChIX_simulations"
+hubprefix <- "/nfs/scistore12/hpcgrp/jyeung/data_from_Hubrecht/hpc_hub_oudenaarden/scChIX_simulations/simulation_data_downstream/plots"
 cbPalette <- c("#696969", "#56B4E9", "#F0E442", "#0072B2", "#D55E00", "#CC79A7", "#006400",  "#32CD32", "#FFB6C1", "#0b1b7f", "#ff9f7d", "#eb9d01", "#2c2349", "#753187", "#f80597")
 cbPalette.ctype <- c("#FFB6C1", "#32CD32", "#56B4E9", "#FFB6C1", "#F0E442", "#0072B2", "#D55E00", "#CC79A7", "#006400", "#FFB6C1", "#32CD32", "#0b1b7f", "#ff9f7d", "#eb9d01", "#7fbedf")
 frac.mutexcl.str.vec <- c("0.01", "0.5", "1.0"); names(frac.mutexcl.str.vec) <- frac.mutexcl.str.vec
 jmarks <- c("mark1", "mark2", "mark1-mark2"); names(jmarks) <- jmarks
 
 
-outpdf <- file.path(hubprefix, paste0("jyeung/data/dblchic/from_cluster/simulation_data_downstream/plots/scchix_downstream_inference_checks_across_frac_overlapping_bins.", Sys.Date(), ".pdf"))
+outpdf <- file.path(hubprefix, paste0("scchix_downstream_inference_checks_across_frac_overlapping_bins_fix_umap.", Sys.Date(), ".pdf"))
 
 pdf(outpdf, useDingbats = FALSE)
 
 dat.umap.lst <- lapply(frac.mutexcl.str.vec, function(jfrac){
-  inf <- file.path(hubprefix, paste0("jyeung/data/dblchic/from_cluster/simulation_data_downstream/plots/dat_umap_joined.downstream_overlaps.frac_mutexcl_", jfrac, ".rds"))
+  inf <- file.path(hubprefix, paste0("dat_umap_joined.downstream_overlaps.frac_mutexcl_", jfrac, ".rds"))
+  print(inf)
   dat.umap.tmp <- readRDS(inf) %>%
     rowwise() %>%
     mutate(frac.mutexcl.str = jfrac,
@@ -37,7 +40,7 @@ dat.umap.lst <- lapply(frac.mutexcl.str.vec, function(jfrac){
 })
 
 dat.binmeans.lst.lst <- lapply(frac.mutexcl.str.vec, function(jfrac){
-  inf <- file.path(hubprefix, paste0("jyeung/data/dblchic/from_cluster/simulation_data_downstream/plots/bin_means.downstream_overlaps.frac_mutexcl_", jfrac, ".rds"))
+  inf <- file.path(hubprefix, paste0("bin_means.downstream_overlaps.frac_mutexcl_", jfrac, ".rds"))
   dat.binmeans.lst <- lapply(readRDS(inf), function(jdat){
     jdat$frac.mutexcl.str <- jfrac
     jdat$frac.mutexcl.recalc <- as.numeric(ifelse(jfrac == "1.0", "0.99", jfrac))
@@ -98,7 +101,8 @@ ggplot(dat.binmeans.binned, aes(x = xbin, y = 0, ymin = CI.lower.centered, ymax 
 
 # Plot umaps  -------------------------------------------------------------
 
-
+dat.umap.long <- dat.umap.lst %>% bind_rows() %>%
+  mutate(umap2.scale = ifelse(ctype == "B", umap2.scale + 0.5)
 
 ggplot(dat.umap.lst %>% bind_rows(), aes(x = umap1.scale.shift, y = umap2.scale, color = ctype, group = cell)) +
   geom_point() +
