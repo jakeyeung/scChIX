@@ -45,7 +45,21 @@ MergeMarksEstimateOverlap <- function(bin.dat){
 }
 
 
-
+#' Wrangling function: Takes different cell types from a histone mark X SimulateChICseq and concatenates them together
+#' 
+#' @param ctype.sim.counts.lst Output from SimulateChICseq which contains different cell types across different histone mark conditions. 
+#' @param ctypes Vector of name of cell types to be concatenated together. 
+#' @param jmark Name of histone mark from which cell types will be extracted.
+#' @return mat.mark1 Matrix of counts, rows are bins, columns are cells.
+#' @examples
+#' ctype.sim.counts.lst <- lapply(ctypes, function(jctype){
+#' SimulateChICseq(ctype.name = jctype,
+#'                 jseed = ctype.params.lst[[jctype]]$jseed,
+#'                 shuffle.rows.seed = ctype.params.lst[[jctype]]$shuffle.rows.seed,
+#'                 frac.mutual.excl = ctype.params.lst[[jctype]]$frac.mutual.excl)
+#' })
+#' mat.mark1 <- ConcatMat(ctype.sim.counts.lst, ctypes, jmark = "mark1")
+#' @export
 ConcatMat <- function(ctype.sim.counts.lst, ctypes, jmark){
   mat.mark1.lst <- lapply(ctypes, function(jctype){
     ctype.sim.counts.lst[[jctype]][[jmark]]
@@ -68,7 +82,61 @@ SwapBins <- function(ctype1.sim.counts.b, top.bins, bottom.bins, frac.swap, jnbi
   return(ctype1.sim.counts.b.swapped)
 }
 
-SimulateChICseq <- function(ctype.name = "A", jseed = 0, shuffle.rows.seed = 0, frac.mutual.excl = 0.5, jspec = "mm10",
+#' Simulate count matrices from a Poisson distribution
+#' 
+#' @param ctype.name Name of "celltype" that these single counts come from. Default "A"
+#' @param jseed Random seed for simulating count matrices from Poisson distribution
+#' @param shuffle.rows.seed Random seed for shuffling rows. Changing this number and rerunning would generate counts from another "celltype".
+#' @param frac.mutual.excl Fraction of bins that will be made mutually exclusive between the second mark. This is done by swapping bins with the highest counts (i.e. largest lambda from Poisson) with the lowest counts.
+#' @param jspec Species is mm10 or hg38. Defines position information.
+#' @param jncells.per.rep number of cells per replicate. Generates 3 replicates. One for histone mark 1, one for histone mark 2, and one with histone mark 1 + 2
+#' @param jnbins Number of bins in the data
+#' @param jlibmean Average (mean) library size
+#' @param libsd Standard deviation in library size
+#' @param jzp Additional dropouts from Poisson (will still be Poisson after dropouts)
+#' @return ctype1.sim.counts.lst Simulated counts from the three replicates (hist 1, hist 2, hist1+2) and annotations of whether the bin is overlapping or mutually exclusive.
+#' @examples
+#' 
+#' jspec <- "hg38"
+#' jseed <- 0
+#' jncells.per.rep <- 250
+#' jnbins <- 10000
+#' jlibmean <- 12
+#' jlibsd <- 1
+#' jlibp <- 0.5
+#' jzp <- 1
+#' shuffle.rows.seed <- jseed
+#' sim.params <- list(jspec = jspec,
+#' jseed = jseed,
+#' jncells.per.rep = jncells.per.rep,
+#' jnbins = jnbins,
+#' jlibmean = jlibmean,
+#' jlibsd = jlibsd,
+#' jlibp = jlibp,
+#' jzp = jzp)
+#' ctype.sim.counts.lst <- lapply(ctypes, function(jctype){
+#' ctypes <- c("A", "B", "C")
+#' names(ctypes) <- ctypes
+#' 
+#' ctype.params <- list(ctype.name = c("A", "B", "C"),
+#'                      jseed = c(0, 123, 999),
+#'                      shuffle.rows.seed = c(0, 123, 999),
+#'                      frac.mutual.excl = c(0.5, 0.5, 0.5))
+#' 
+#' ctype.params.lst <- lapply(ctypes, function(ctype){
+#'   i <- which(ctype.params$ctype.name == ctype)
+#'   return(list(ctype = ctype,
+#'               jseed = ctype.params$jseed[[i]],
+#'               shuffle.rows.seed = ctype.params$shuffle.rows.seed[[i]],
+#'               frac.mutual.excl = ctype.params$frac.mutual.excl[[i]]))
+#' })
+#' SimulateChICseq(ctype.name = jctype,
+#'                 jseed = ctype.params.lst[[jctype]]$jseed,
+#'                 shuffle.rows.seed = ctype.params.lst[[jctype]]$shuffle.rows.seed,
+#'                 frac.mutual.excl = ctype.params.lst[[jctype]]$frac.mutual.excl)
+#' })
+#' @export
+SimulateChICseq <- function(ctype.name = "A", jseed = 0, shuffle.rows.seed = 0, frac.mutual.excl = 0.5, jspec = "hg38",
                             jncells.per.rep = 250, jnbins = 5000, jlibmean = 12,
                             jlibsd = 1, jlibp = 0.5, jzp = 1){
 
@@ -102,6 +170,7 @@ SimulateChICseq <- function(ctype.name = "A", jseed = 0, shuffle.rows.seed = 0, 
   bin.data$Bin <- as.character(bin.data$Bin)
   bin.data$Bin.Orig <- as.character(bin.data$Bin)
   # shuffle bins
+  set.seed(shuffle.rows.seed)
   bin.data$Bin <- sample(bin.data$Bin.Orig, size = nrow(bin.data), replace = FALSE)
 
   assertthat::assert_that(all(sort(unique(bin.data$Bin)) == sort(unique(bin.data$Bin.Orig))))

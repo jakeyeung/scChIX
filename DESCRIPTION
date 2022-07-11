@@ -35,3 +35,4 @@ Imports:
     umap,
     ggforce,
     parallel
+RoxygenNote: 7.1.2

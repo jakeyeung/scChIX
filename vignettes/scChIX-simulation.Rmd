@@ -1,0 +1,302 @@
+---
+title: "scChIX example: performing model selection, unmixing double-incubated cells, and linking UMAPs"
+output:
+  md_document:
+    variant: markdown_github
+vignette: >
+  %\VignetteIndexEntry{scChIX-vignette}
+  %\VignetteEngine{knitr::rmarkdown}
+  %\VignetteEncoding{UTF-8}
+---
+
+
+```{r, include = FALSE}
+knitr::opts_chunk$set(
+  collapse = TRUE,
+  warning = FALSE,
+  cache  = TRUE,
+  fig.width = 14,
+  fig.width = 14,
+  comment = "#>"
+)
+```
+
+
+
+
+```{r setup, echo=FALSE, include=FALSE}
+library(scChIX)
+library(dplyr)
+library(ggplot2)
+library(data.table)
+library(umap)
+library(hash)
+library(igraph)
+# library(devtools)
+# install_github("bowang-lab/simATAC")
+library(simATAC)
+library(JFuncs) # for plotting multiple panels in one plot
+library(irlba)
+```
+
+
+## Simulating scChIX input data 
+
+
+First we set up some parameters to simulate scChIX data. We will set half the bins to be "mutually exclusive" while the other half will be overlapping.
+
+```{r init, out.width="80%", echo=FALSE}
+
+hubprefix <- getwd()
+outdir <- file.path(hubprefix, "snakemake_inputs_countmats")
+dir.create(outdir, recursive = TRUE)
+
+jspec <- "hg38"
+jseed <- 0
+jncells.per.rep <- 250
+jnbins <- 10000
+jlibmean <- 12
+jlibsd <- 1
+jlibp <- 0.5
+jzp <- 1
+shuffle.rows.seed <- jseed
+
+sim.params <- list(jspec = jspec,
+                   jseed = jseed,
+                   jncells.per.rep = jncells.per.rep,
+                   jnbins = jnbins,
+                   jlibmean = jlibmean,
+                   jlibsd = jlibsd,
+                   jlibp = jlibp,
+                   jzp = jzp)
+
+
+# Run simulation ----------------------------------------------------------
+
+ctypes <- c("A", "B", "C")
+names(ctypes) <- ctypes
+
+ctype.params <- list(ctype.name = c("A", "B", "C"),
+                     jseed = c(0, 123, 999),
+                     shuffle.rows.seed = c(0, 123, 999),
+                     frac.mutual.excl = c(0.5, 0.5, 0.5))
+
+ctype.params.lst <- lapply(ctypes, function(ctype){
+  i <- which(ctype.params$ctype.name == ctype)
+  return(list(ctype = ctype,
+              jseed = ctype.params$jseed[[i]],
+              shuffle.rows.seed = ctype.params$shuffle.rows.seed[[i]],
+              frac.mutual.excl = ctype.params$frac.mutual.excl[[i]]))
+})
+```
+
+For each of the three cell types, we generate three count matrices. First represents histone mark 1, second represents histone mark 2, and the third represents histone mark 1+2 double-incubation.
+
+```{r generate_counts, out.width="80%", echo=FALSE}
+
+
+ctype.sim.counts.lst <- lapply(ctypes, function(jctype){
+  scChIX::SimulateChICseq(ctype.name = jctype,
+                  jseed = ctype.params.lst[[jctype]]$jseed,
+                  shuffle.rows.seed = ctype.params.lst[[jctype]]$shuffle.rows.seed,
+                  frac.mutual.excl = ctype.params.lst[[jctype]]$frac.mutual.excl)
+})
+
+
+# Create simulated matrix -------------------------------------------------
+
+
+jmark1 <- "mark1"
+jmark2 <- "mark2"
+jmarkdbl <- paste(jmark1, jmark2, sep = "-")
+
+mat.mark1 <- scChIX::ConcatMat(ctype.sim.counts.lst, ctypes, jmark = "mark1")
+mat.mark2 <- scChIX::ConcatMat(ctype.sim.counts.lst, ctypes, jmark = "mark2")
+mat.markdbl <- scChIX::ConcatMat(ctype.sim.counts.lst, ctypes, jmark = "markdbl")
+
+mat.mark.lst <- list(mat.mark1, mat.mark2, mat.markdbl)
+names(mat.mark.lst) <- c(jmark1, jmark2, jmarkdbl)
+
+jmarks <- names(mat.mark.lst)
+names(jmarks) <- jmarks
+
+```
+
+We do a quick check the UMAPs of these count matrices that they are three different cell types for each histone mark. 
+
+```{r check, out.width="80%", echo=FALSE}
+
+
+jsettings <- umap.defaults
+jsettings$n_neighbors <- 150
+jsettings$min_dist <- 0.1
+jsettings$random_state <- 123
+cbPalette <- c("#696969", "#56B4E9", "#F0E442", "#0072B2", "#D55E00", "#CC79A7", "#006400",  "#32CD32", "#FFB6C1", "#0b1b7f", "#ff9f7d", "#eb9d01", "#2c2349", "#753187", "#f80597")
+
+dat.umap.init.lst <- lapply(mat.mark.lst, function(jmat){
+  print(head(jmat[1:5, 1:5]))
+  lsi.out <- scchicFuncs::RunLSI(as.matrix(jmat)) # requires irlba
+  dat.umap.mark <- scchicFuncs::DoUmapAndLouvain(topics.mat = lsi.out$u, jsettings = jsettings)
+  return(dat.umap.mark)
+})
+
+jmarks <- names(dat.umap.init.lst); names(jmarks) <- jmarks
+m.lst <- lapply(jmarks, function(jmark){
+  jdat <- dat.umap.init.lst[[jmark]]
+  m <- ggplot(jdat, aes(x = umap1, y = umap2, color = louvain)) +
+    geom_point() +
+    theme_bw() +
+    ggtitle(jmark) + 
+    scale_color_manual(values = cbPalette) +
+    theme(aspect.ratio=1, panel.grid.major = element_blank(), panel.grid.minor = element_blank())
+  return(m)
+})
+
+print(m.lst)
+
+```
+
+## Running scChIX on input data
+
+Write the count matrices to a directory (see `inst/extdata/countmat_var_filt.mark1.rds` 
+for example) and then run the snakemake workflow 
+`snakemake_workflow/run_snakemake.simulation_data.sh` changing the paths to 
+the correct directories. 
+
+The snakemake workflow takes several hours to complete, so we will just load
+and analyze the results in this notebook. 
+
+
+## Downstream analysis of scChIX to check simulated data 
+
+Load the scChIX outputs for the simulated data for three overlapping scenarios:
+`frac.mutual.excl=0.01, 0.5, 0.99`
+
+```{r load_outputs, out.width="80%", echo=FALSE}
+data(Simulation_scChIX_Outputs, verbose=FALSE)
+```
+
+We can plot the empirical 95% confidence intervals from our estimates of
+the degree of overlaps.
+
+
+```{r ci, out.width="80%", echo=FALSE}
+
+
+# we use the scenario of 0.99 mutually exclusive bins because that spans 
+# the range of degree of overlaps from 0 to 1.
+dat.binmeans.binned <- dat.binmeans.lst.lst$`0.99` %>%
+  bind_rows() %>%
+  rowwise() %>%
+  mutate(xbin = round(BinMean.dbl, 2)) %>%
+  group_by(xbin) %>%
+  summarise(Mean = mean(overlap.estimate),
+            StdDev = sd(overlap.estimate),
+            CI.lower = quantile(overlap.estimate, 0.05),
+            CI.upper = quantile(overlap.estimate, 0.95),
+            CI.lower.centered = CI.lower - Mean,
+            CI.upper.centered = CI.upper - Mean)
+
+ggplot(dat.binmeans.binned, aes(x = xbin, y = StdDev)) +
+  geom_point() +
+  theme_bw() +
+  theme(aspect.ratio=1, panel.grid.major = element_blank(), panel.grid.minor = element_blank()) +
+  xlab("Fraction of Bin Signal Multiplexed to Mark 1") +
+  ylab("Standard Deviation")
+
+ggplot(dat.binmeans.binned, aes(x = xbin, y = Mean, ymin = CI.lower, ymax = CI.upper)) +
+  geom_abline(slope = 1, color = 'blue', size = 1, alpha = 0.5) +
+  geom_point() +
+  geom_errorbar() +
+  theme_bw() +
+  theme(aspect.ratio=1, panel.grid.major = element_blank(), panel.grid.minor = element_blank()) +
+  xlab("True Fraction of Bin Signal Multiplexed to Mark 1") +
+  ylab("Inferred Fraction of Bin Signal Multiplexed to Mark 1\n(ErrorBars: 95% CI)")
+
+ggplot(dat.binmeans.binned, aes(x = xbin, y = 0, ymin = CI.lower.centered, ymax = CI.upper.centered)) +
+  geom_point() +
+  geom_errorbar() +
+  theme_bw() +
+  theme(aspect.ratio=1, panel.grid.major = element_blank(), panel.grid.minor = element_blank()) +
+  xlab("True Fraction of Bin Signal Multiplexed to Mark 1") +
+  ylab("95% Confidence Interval (+/- Fraction)") +
+  coord_cartesian(ylim = c(-0.1, 0.1))
+
+ggplot(dat.binmeans.binned, aes(x = xbin, y = 0, ymin = CI.lower.centered, ymax = CI.upper.centered)) +
+  geom_point() +
+  geom_errorbar() +
+  theme_bw() +
+  theme(aspect.ratio=0.33, panel.grid.major = element_blank(), panel.grid.minor = element_blank()) +
+  xlab("True Fraction of Bin Signal Multiplexed to Mark 1") +
+  ylab("95% Confidence Interval (+/- Fraction)") +
+  coord_cartesian(ylim = c(-0.1, 0.1))
+
+
+```
+
+We can show that the two UMAPs can be linked together using the deconvolved
+double-incubated cells as anchors.
+
+
+```{r umap, out.width="80%", echo=FALSE}
+
+# Plot umaps  -------------------------------------------------------------
+
+dat.umap.long <- dat.umap.lst %>% bind_rows() %>%
+  rowwise() %>%
+  mutate(umap2.scale = ifelse(ctype == "B", umap2.scale + 0.75, umap2.scale)) # shift up to improve visualization
+
+ggplot(dat.umap.long, aes(x = umap1.scale.shift, y = umap2.scale, color = ctype, group = cell)) +
+  geom_point() +
+  geom_path(alpha = 0.02) +
+  geom_vline(xintercept = 0, linetype = "dotted") +
+  scale_color_manual(values = cbPalette.ctype, na.value = "grey85") +
+  facet_wrap(~frac.overlapping.bins) +
+  theme_bw() +
+  theme(aspect.ratio=0.5, panel.grid.major = element_blank(), panel.grid.minor = element_blank(), legend.position = "bottom")
+
+```
+
+
+Finally we can plot the distribution of overlap estimates across the bins and
+compare how these distributions look compared to ground truth.
+
+
+```{r hist, out.width="80%", echo=FALSE}
+frac.mutexcl.str.vec <- c("0.01", "0.5", "0.99"); names(frac.mutexcl.str.vec) <- frac.mutexcl.str.vec
+
+dat.binmeans.lst <- lapply(frac.mutexcl.str.vec, function(jfrac){
+  dat.binmeans.lst.lst[[jfrac]] %>%
+    bind_rows()
+})
+
+m.lst <- lapply(frac.mutexcl.str.vec, function(jfrac){
+  jtitle <- jfrac # mutually exclusive
+  jtitle <- 1 - as.numeric(jtitle) # degree of overlap
+  m <- ggplot(dat.binmeans.lst[[jfrac]], aes(x = BinMean.dbl, fill = annot, y = ..count../sum(..count..))) +
+    geom_histogram(bins = 50, position = "identity", alpha = 0.5) +
+    ggtitle(paste("True Fraction of Signal Multiplexed to Mark 1. Frac overlap: ", jtitle)) +
+    theme_bw() +
+    theme(aspect.ratio=1, panel.grid.major = element_blank(), panel.grid.minor = element_blank(), legend.position = "bottom")
+  return(m)
+})
+
+print(m.lst)
+JFuncs::multiplot(m.lst[[1]], m.lst[[2]], m.lst[[3]], cols = 3)
+
+
+m.infer.lst <- lapply(frac.mutexcl.str.vec, function(jfrac){
+  jtitle <- ifelse(jfrac == "1.0", "0.99", jfrac)
+  jtitle <- 1 - as.numeric(jtitle)
+  m <- ggplot(dat.binmeans.lst[[jfrac]], aes(x = overlap.estimate, fill = annot, y = ..count../sum(..count..))) +
+    geom_histogram(bins = 50, position = "identity", alpha = 0.5) +
+    ggtitle(paste("Inferred Fraction of Signal Multiplexed to Mark 1. Frac overlap: ", jtitle)) +
+    theme_bw() +
+    theme(aspect.ratio=1, panel.grid.major = element_blank(), panel.grid.minor = element_blank(), legend.position = "bottom")
+  return(m)
+})
+print(m.infer.lst)
+JFuncs::multiplot(m.infer.lst[[1]], m.infer.lst[[2]], m.infer.lst[[3]], cols = 3)
+
+
+```
