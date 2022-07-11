@@ -17,7 +17,7 @@ Follow the vignettes for an example of deconvolving the multiplexed signal. The 
 
 Here are a list of vignettes for guided analysis:
 
-![Simulation studies and downstream analysis of estimates versus ground truth:](https://github.com/jakeyeung/scChIX/blob/main/vignettes/scChIX-simulation.md)
+[Simulation studies and downstream analysis of estimates versus ground truth:](https://github.com/jakeyeung/scChIX/blob/main/vignettes/scChIX-simulation.md)
 
-![Analysis of scChIX downstream:](https://github.com/jakeyeung/scChIX/blob/main/vignettes/scChIX-vignette.md)
+[Analysis of scChIX downstream:](https://github.com/jakeyeung/scChIX/blob/main/vignettes/scChIX-vignette.md)
 
