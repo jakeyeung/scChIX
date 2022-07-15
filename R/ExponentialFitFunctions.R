@@ -1,4 +1,15 @@
 
+#' Check if gene is up- or down-regulated
+#' 
+#' @param dat.impute.lst list of matrices (rows are genes, columns are cells). Each matrix is a different histone mark
+#' @param refmark name of histone mark used to access specific matrix in dat.impute.lst
+#' @param jgene name of gene (row name) found in the matrix
+#' @param dat.meta.long data frame of metadata for individual cells. Column names include cell, mark, and ptime.expnorm (pseudotime)
+#' @return "up" if gene increase along pseudotime "down" if gene decreases along pseudotime
+#' @examples
+#' upordown <- IsUpOrDown(dat.impute.lst, refmark = jmark2, jgene = jgene, dat.meta.long = dat.meta.long)
+#' 
+#' @export
 IsUpOrDown <- function(dat.impute.lst, refmark, jgene, dat.meta.long){
   
   dat.refmark <- data.frame(signal = dat.impute.lst[[refmark]][jgene, ], 
@@ -23,7 +34,26 @@ expo.relax <- function(ptime.exp.norm, mugamma, gamma, s0){
   s0 + mugamma * (1 - exp(-gamma * ptime.exp.norm))
 }
 
-
+#' Check if gene is up- or down-regulated
+#' 
+#' @param dat.impute.lst list of matrices (rows are genes, columns are cells). Each matrix is a different histone mark
+#' @param dat.meta.long data frame of metadata for individual cells. Column names include cell, mark, and ptime.expnorm (pseudotime)
+#' @param jgene name of gene (row name) found in the matrix
+#' @param jmark1 name of mark1. In paper it is H3K4me1
+#' @param jmark2 name of mark2. In paper it is H3K36me3
+#' @param refmark name of refmark. In paper it is H3K36me3
+#' @param returnlst return list split by mark
+#' @param offset.zero set min(signal) to be zero if upregulated, set max(signal) to be zero if downregulated
+#' @param frac.cells.filter deprecated input, ignore it
+#' @param MaxOrMin "max" or "min". Set "max" if gene is downregulated, set "min" if upregulated.
+#' @return dat.exprs.long.annot: Wrangled data frame for a gene, annotated with pseudotime across cells and marks. Ready for fitting exponentials.
+#' @examples
+#' upordown <- IsUpOrDown(dat.impute.lst, refmark = jmark2, jgene = jgene, dat.meta.long = dat.meta.long)
+#' offset.fn <- ifelse(upordown == "up", min, max)
+#' asymp.init.fn <- ifelse(upordown == "up", max, min)
+#' dat.exprs.long.gene.lst <- SetupDatForGene.UpOrDown(dat.impute.lst, dat.meta.long, jgene, jmark1 = jmark1, jmark2 = jmark2, returnlst = TRUE, offset.zero = TRUE, MaxOrMin = offset.fn)
+#' 
+#' @export
 SetupDatForGene.UpOrDown <- function(dat.impute.lst, dat.meta.long, jgene, jmark1 = "H3K4me1", jmark2 = "H3K36me3", refmark = "H3K36me3", returnlst = TRUE, offset.zero = TRUE, frac.cells.filter = 0.01, MaxOrMin = max){
   jmark.dbl <- paste(jmark1, jmark2, collapse = "-")
   dat.exprs.long <- data.frame(signal = c(dat.impute.lst[[jmark1]][jgene, ], dat.impute.lst[[jmark2]][jgene, ]), 
@@ -97,7 +127,25 @@ FitAsympTryCatch <- function(dat.exprs.long.gene, asymp.init, loggamma.init, jit
   return(jfit)
 }
 
-
+#' Fit exponential
+#' 
+#' @param dat.exprs.long.gene.lst Wrangled data frame for a gene with colnames signal and ptime.exp.norm  ready for fitting exponentials across pseudotime
+#' @param jmark1 name of mark1. In paper it is H3K4me1
+#' @param jmark2 name of mark2. In paper it is H3K36me3
+#' @param asymp.init init asymptote value. "auto" takes MaxOrMin function of the signal. MaxOrMin is "max" or "min". Set "max" if gene is downregulated, set "min" if upregulated.
+#' @param loggamma.init init value for log of gamma (time constant)
+#' @param jiter number of iterations for fitting nonlinear model
+#' @param MaxOrMin "max" or "min". Set "max" if gene is downregulated, set "min" if upregulated.
+#' @return data.frame of exponential fit outputs on mark1 and mark2
+#' @examples
+#' upordown <- IsUpOrDown(dat.impute.lst, refmark = jmark2, jgene = jgene, dat.meta.long = dat.meta.long)
+#' offset.fn <- ifelse(upordown == "up", min, max)
+#' asymp.init.fn <- ifelse(upordown == "up", max, min)
+#' dat.exprs.long.gene.lst <- SetupDatForGene.UpOrDown(dat.impute.lst, dat.meta.long, jgene, jmark1 = jmark1, jmark2 = jmark2, returnlst = TRUE, offset.zero = TRUE, MaxOrMin = offset.fn)
+#' dat.out <- FitAsympMarks.UpOrDown(dat.exprs.long.gene.lst, jmark1 = jmark1, jmark2 = jmark2, asymp.init = "auto", loggamma.init = 0, MaxOrMin = asymp.init.fn)
+#' outlst <- list(dat.out = dat.out, dat.exprs.long.gene.lst = dat.exprs.long.gene.lst, upordown = upordown)
+#' 
+#' @export
 FitAsympMarks.UpOrDown <- function(dat.exprs.long.gene.lst, jmark1 = "H3K4me1", jmark2 = "H3K36me3", asymp.init = "auto", loggamma.init = 0, jiter = 1000, MaxOrMin = max){
   jgene <- unique(dat.exprs.long.gene.lst[[1]]$gene)
   if (asymp.init == "auto"){

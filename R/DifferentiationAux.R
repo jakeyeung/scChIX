@@ -3,6 +3,13 @@
 # File: ~/projects/scChIX/R/DifferentiationAux.R
 # 
 
+#' Get day given cell data frame
+#' 
+#' @param dat.meta Input dataframe containing column name "cell" indicating cell names for macrophage differentiation experiment
+#' @return metadata annotated with day
+#' @examples
+#' dat.meta.annot <- GetDayFromCellDataFrame(dat.meta)
+#' @export
 GetDayFromCellDataFrame <- function(dat.meta){
   # assumes "cell" is in column name
   dat.meta.annot <- dat.meta %>%
@@ -16,6 +23,13 @@ GetDayFromCellDataFrame <- function(dat.meta){
   return(dat.meta.annot)
 }
 
+#' Get day given cell name
+#' 
+#' @param cell cell name for macrophage differentiation experiment
+#' @return day from which cell was extracted
+#' @examples
+#' day <- GetDadyFromCellByRow(dat.meta$cell[[1]])
+#' @export
 GetDayFromCellByRow <- function(cell){
   # assumes "cell" is in column name
   platename <- scChIX::ClipLast(cell, jsep = "_")

@@ -4,6 +4,16 @@
 # Functions for simulating scChIX data
 
 
+#' Wrangling function: Take count mat and summarize into mean across selected columns (eg by columns that are from same cluster)
+#' 
+#' @param count.mat Count matrix, usually rows are genes and columns are cells
+#' @param cnames.keep.lst List where names are cluster identities, values in list are column names that are to be summarized
+#' @param jfunc Summarizing function, default is rowMeans
+#' @return List of count vectors with same names as cnames.keep.lst. Count values are across rows of the matrix 
+#' @examples
+#' cnames.keep.lst <- lapply(split(dat.final.annots, f = dat.final.annots$cluster), function(x) x$cell) # create cluster to cell input list
+#' prob.mat.byclst.lst <- MeanAcrossClusters(prob.mat, cnames.keep.lst = cnames.keep.lst) # average probabilities across clusters
+#' @export
 MeanAcrossClusters <- function(count.mat, cnames.keep.lst, jfunc = rowMeans){
   count.mat <- as.matrix(count.mat)
   count.vecs <- lapply(cnames.keep.lst, function(cnames.keep){

@@ -131,6 +131,30 @@ FitMixingWeightPtimeLinear <- function(cell.count.raw.merged, jfits.lowess1, jfi
         method = jmethod, hessian=jhessian, lower = c(w.lower, p1.lower, p2.lower), upper = c(w.upper, p1.upper, p2.upper), control = list(ndeps = c(0.02, 0.02, 0.02)))
 }
 
+
+
+#' Infer pseudotime1 and pseudotime2 from a double-incubated cell
+#' 
+#' @param cell.count.raw.merged vector of raw cell counts from a double-incubated cell. If KNN smoothing, then this vector is the sum of the double-incubated cell and its nearest K neighbors (K=25 used in paper). 
+#' @param jfits.lowess1 Named list of "smooth.spline" outputs (lowess fits) for mark1. Each element in list is accessible by a gene name that matches the names in cell.count.raw.merged
+#' @param jfits.lowess2 Named list of "smooth.spline" outputs (lowess fits) mark2. Each element in list is accessible by a gene name that matches the names in cell.count.raw.merged
+#' @param w.fixed Fixed weighting between mark1 and mark2. In paper we used w=0.77, optimized by running scChIX for different w's. Fixing w for all cells makes for more stable outputs than a cell-specific w
+#' @param p1.init init pseudotime1 [0, 1]
+#' @param p2.init init pseudotime2 [0, 1]
+#' @param p1.lower lowerbound for pseudotime1 (eg 0)
+#' @param p2.lower lowerbound for pseudotime2 (eg 0)
+#' @param p1.upper upperbound for pseudotime1 (eg 1)
+#' @param p2.upper upperbound for pseudotime2 (eg 1)
+#' @param jmethod method for optimizing: use one that allows constraints like "L-BFGS-B"
+#' @param jhessian return hessian (TRUE or FALSE). TRUE allows one to estimate the standard errors of the pseudotime estimates afterwards.
+#' @return optim output for best pseudotime1 and pseudotime2 that fits the double-incubated cell
+#' @examples
+#' jfits.lst <- parallel::mclapply(jcells, function(jcell){
+#'   cell.count.raw.merged <- mat.dbl[, jcell]
+#'   jfit.fixedw <- FitMixingWeightPtimeLinear.fixedw(cell.count.raw.merged = cell.count.raw.merged, jfits.lowess1 = fits.lowess1.linear, jfits.lowess2 = fits.lowess2.linear, w.fixed = w.fixed, p1.init = 0.5, p1.lower = 0.01, p1.upper = 0.99,  p2.init = 0.5, p2.lower = 0.01, p2.upper = 0.99, jmethod = "L-BFGS-B", jhessian = TRUE)
+#' }, mc.cores = ncores)
+#' 
+#' @export
 FitMixingWeightPtimeLinear.fixedw <- function(cell.count.raw.merged, jfits.lowess1, jfits.lowess2, w.fixed, p1.init, p1.lower, p1.upper, p2.init, p2.lower, p2.upper, jmethod = "L-BFGS-B", jhessian = FALSE){
   # https://www.psychologie.uni-heidelberg.de/ae/meth/team/mertens/blog/hessian.nb.html
   # method by Brent is recommended?

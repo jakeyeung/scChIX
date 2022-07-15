@@ -4,7 +4,6 @@
 #
 
 
-
 AnnotateBins2.R4 <- function (terms.mat, top.thres = 0.995, inf.tss = "/Users/yeung/data/scchic/tables/gene_tss_winsize.50000.bed", 
                               txdb = TxDb.Mmusculus.UCSC.mm10.knownGene, annodb = "org.Mm.eg.db", 
                               chromos.keep = c(paste("chr", seq(19), sep = ""), "chrX", 
@@ -67,7 +66,15 @@ AnnotateBins2.R4 <- function (terms.mat, top.thres = 0.995, inf.tss = "/Users/ye
               terms.filt = terms.filt))
 }
 
-
+#' Clips out string after the last separator. eg B6-13W1-BM-H3K4me3-1_269 -> B6-13W1-BM-H3K4me3
+#' 
+#' @param x string containing a separator and text you want you clip out
+#' @param jsep separator, such as dash or underscore that matches in the text. If matches multiple times, will take the last match
+#' @param jsep.out Output separator, important if clipping "." you want to input "\\." to escape the special character
+#' @return string with characters after separator clipped out
+#' @examples
+#' ClipLast("B6-13W1-BM-H3K4me3-1_269", jsep = "_", jsep.out = "_")
+#' @export
 ClipLast <- function(x, jsep = "-", jsep.out = NULL){
   # B6-13W1-BM-H3K4me3-1_269 -> B6-13W1-BM-H3K4me3
   if (is.null(jsep.out)){
@@ -80,7 +87,15 @@ ClipLast <- function(x, jsep = "-", jsep.out = NULL){
 }
 
 
-
+#' Take softmax of a vector of values. Input are reals and output will be a vector of probabilities.
+#' 
+#' @param x Vector of real numbers, can be negative or positive
+#' @param return.log Return the log of the probabilities
+#' @param logfn function for logarithm. Default natural log. Can also use log2.
+#' @return plog vector of probabilities
+#' @examples
+#' p.mat <- SoftMax(jfit$ll.mat)  # convert a vector of log-likelihoods into a vector of probabilities
+#' @export
 SoftMax <- function(x, return.log = TRUE, logfn = log){
   # numericallys table softmax by subtracting the maximum first
   # https://stackoverflow.com/questions/42599498/numercially-stable-softmax
