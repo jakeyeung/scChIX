@@ -4,7 +4,7 @@ output:
   md_document:
     variant: markdown_github
 vignette: >
-  %\VignetteIndexEntry{scChIX-vignette}
+  %\VignetteIndexEntry{scChIX-simulation}
   %\VignetteEngine{knitr::rmarkdown}
   %\VignetteEncoding{UTF-8}
 ---
@@ -24,7 +24,7 @@ knitr::opts_chunk$set(
 
 
 
-```{r setup, echo=FALSE, include=FALSE}
+```{r setup, echo=TRUE, include=TRUE}
 library(scChIX)
 library(dplyr)
 library(ggplot2)
@@ -45,7 +45,7 @@ library(irlba)
 
 First we set up some parameters to simulate scChIX data. We will set half the bins to be "mutually exclusive" while the other half will be overlapping.
 
-```{r init, out.width="80%", echo=FALSE}
+```{r init, out.width="80%", echo=TRUE}
 
 hubprefix <- getwd()
 outdir <- file.path(hubprefix, "snakemake_inputs_countmats")
@@ -92,7 +92,7 @@ ctype.params.lst <- lapply(ctypes, function(ctype){
 
 For each of the three cell types, we generate three count matrices. First represents histone mark 1, second represents histone mark 2, and the third represents histone mark 1+2 double-incubation.
 
-```{r generate_counts, out.width="80%", echo=FALSE}
+```{r generate_counts, out.width="80%", echo=TRUE}
 
 
 ctype.sim.counts.lst <- lapply(ctypes, function(jctype){
@@ -124,7 +124,7 @@ names(jmarks) <- jmarks
 
 We do a quick check the UMAPs of these count matrices that they are three different cell types for each histone mark. 
 
-```{r check, out.width="80%", echo=FALSE}
+```{r check, out.width="80%", echo=TRUE}
 
 
 jsettings <- umap.defaults
@@ -172,7 +172,7 @@ and analyze the results in this notebook.
 Load the scChIX outputs for the simulated data for three overlapping scenarios:
 `frac.mutual.excl=0.01, 0.5, 0.99`
 
-```{r load_outputs, out.width="80%", echo=FALSE}
+```{r load_outputs, out.width="80%", echo=TRUE}
 data(Simulation_scChIX_Outputs, verbose=FALSE)
 ```
 
@@ -180,7 +180,7 @@ We can plot the empirical 95% confidence intervals from our estimates of
 the degree of overlaps.
 
 
-```{r ci, out.width="80%", echo=FALSE}
+```{r ci, out.width="80%", echo=TRUE}
 
 
 # we use the scenario of 0.99 mutually exclusive bins because that spans 
@@ -238,7 +238,7 @@ We can show that the two UMAPs can be linked together using the deconvolved
 double-incubated cells as anchors.
 
 
-```{r umap, out.width="80%", echo=FALSE}
+```{r umap, out.width="80%", echo=TRUE}
 
 # Plot umaps  -------------------------------------------------------------
 
@@ -246,6 +246,7 @@ dat.umap.long <- dat.umap.lst %>% bind_rows() %>%
   rowwise() %>%
   mutate(umap2.scale = ifelse(ctype == "B", umap2.scale + 0.75, umap2.scale)) # shift up to improve visualization
 
+cbPalette.ctype <- c("#FFB6C1", "#32CD32", "#56B4E9", "#FFB6C1", "#F0E442", "#0072B2", "#D55E00", "#CC79A7", "#006400", "#FFB6C1", "#32CD32", "#0b1b7f", "#ff9f7d", "#eb9d01", "#7fbedf")
 ggplot(dat.umap.long, aes(x = umap1.scale.shift, y = umap2.scale, color = ctype, group = cell)) +
   geom_point() +
   geom_path(alpha = 0.02) +
@@ -262,7 +263,7 @@ Finally we can plot the distribution of overlap estimates across the bins and
 compare how these distributions look compared to ground truth.
 
 
-```{r hist, out.width="80%", echo=FALSE}
+```{r hist, out.width="80%", echo=TRUE}
 frac.mutexcl.str.vec <- c("0.01", "0.5", "0.99"); names(frac.mutexcl.str.vec) <- frac.mutexcl.str.vec
 
 dat.binmeans.lst <- lapply(frac.mutexcl.str.vec, function(jfrac){
