@@ -1,0 +1,87 @@
+---
+title: "scChIX example: performing model selection, unmixing double-incubated cells, and linking UMAPs"
+output:
+  md_document:
+    variant: markdown_github
+    toc: true
+vignette: >
+  %\VignetteIndexEntry{scChIX-gastrulation}
+  %\VignetteEngine{knitr::rmarkdown}
+  %\VignetteEncoding{UTF-8}
+---
+
+
+```{r, include = FALSE}
+knitr::opts_chunk$set(
+  collapse = TRUE,
+  warning = FALSE,
+  cache  = TRUE,
+  fig.width = 14,
+  fig.width = 14,
+  comment = "#>"
+)
+```
+
+
+
+
+```{r setup, echo=FALSE, include=FALSE}
+library(scChIX)
+library(dplyr)
+library(ggplot2)
+library(data.table)
+library(umap)
+library(hash)
+library(igraph)
+```
+
+
+## Set up gastrulation data for scChIX snakemake workflow 
+
+First, we load the count matrices that are used for running the scChIX snakemake workflow. 
+
+```{r load-countmats, out.width="80%", echo=TRUE}
+data(CountMatsGastrulationInputs)
+# Loading objects:
+#   countmats.gastru
+rmarkdown::render("~/projects/scChIX/vignettes/scChIX-gastrulation.Rmd")
+```
+
+Save these count matrices as `.rds` files into a `snakemake_inputs/countmats` directory where the `Snakefile`, `config.yaml`, and `cluster.json` files are. 
+
+```{r setup-scchix-workflow, out.width="80%", echo=TRUE}
+# copy snakemake workflow files into directory for outputs
+outdir <- "/tmp"
+copycmd=paste0("cp snakemake_workflow/Snakefile snakemake_workflow/cluster.json snakemake_workflow/config.yaml snakemake_workflow/run_snakemake.gastru_K9.sh", outdir)
+# system(cpycmd)  # run this to move files
+
+# save matrices as .rds to snakemake_inputs
+mkdircmd=paste0("mkdir -p ", outdir, "/snakemake_inputs/countmats")
+# system(mkdircmd)  # make directory before writing mats
+
+# run chunk to save countmats as rds into snakemake input directory
+# use countmat_var_filt.${mark}.rds as name to match expected filename in Snakemake workflow
+# jmarks <- names(countmats.gastru); names(jmarks)
+# for (jmark in jmarks){
+#   saveRDS(countmats.gastru[[jmark]], file.path(outdir, paste0("countmat_var_filt.", jmark, ".rds")))
+# }
+```
+
+## Run snakemake workflow 
+
+```{r run-snakemake-example, out.width="80%", echo=TRUE}
+bashscript=file.path(outdir, paste0("run_snakemake.gastru_K9.sh")) # modify for your specific conda environment and HPC cluster settings
+runcmd=paste0("bash ", bashscript)
+# system(runcmd)  # launch snakemake workflow
+```
+
+## Uncover cell type and heterochromatin relationships
+
+Let's load the outputs of the snakemake workflow and look at the cell type and 
+heterochromatin relationships. 
+
+
+## Infer changes in global ratios of H3K36me3 to H3K9me3
+
+Let's infer changes in global ratios of H3K36me3 and H3K9me3
+
