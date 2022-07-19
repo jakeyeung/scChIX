@@ -20,7 +20,7 @@ knitr::opts_chunk$set(
 )
 ```
 
-```{r setup, echo=FALSE, include=FALSE}
+```{r setup, echo=TRUE, include=TRUE}
 library(scChIX)
 library(dplyr)
 library(ggplot2)
@@ -42,7 +42,7 @@ This can be estimated from as simple as just fraction of reads in bin / total re
 
 Here we ran Latent Dirichlet Allocation (Package: `topicmodels`) to estimate this bin-specific probability genome-wide.
 
-```{r load_objs_forfit_model_selection, echo=FALSE}
+```{r load_objs_forfit_model_selection, echo=TRUE}
 
 # data(ObjsForFittingSubset)
 data(ModelFromSingleForFitting)
@@ -57,7 +57,7 @@ data(RawDblCountMatSubset)
 
 Now for every double-incubated cell (here we take a subset of 90 cells for speed), we perform model selection. The fitting infers which cluster-pair (one from H3K27me3, one from H3K9me3) best fits the observed double-incubated cut for each cell. 
 
-```{r run_fits, echo=FALSE}
+```{r run_fits, echo=TRUE}
 
 # bounds for fitting mixing fraction
 wlower <- 0
@@ -80,7 +80,7 @@ system.time(
 
 We plot the fit for one cell as an example of the output. Here we show a double-incubated granulocyte cell (which we know from ground truth from FACS) is correctly predicted to come from a mixture of granulocyte-specific H3K27me3 distribution plus a granulocyte-specific H3K9me3 distribution.
 
-```{r visualize_one_cell, out.width="80%", echo=FALSE}
+```{r visualize_one_cell, out.width="80%", echo=TRUE}
 
 
 (jcell.tmp <- names(act.repress.coord.lst)[[1]])
@@ -124,7 +124,7 @@ print(m)
 
 For each double-incubated cell, we select the best cluster-pair inferred from the model and summarize the assignments in a 2D grid. 
 
-```{r visualize_all_cells, out.width="80%", echo=FALSE}
+```{r visualize_all_cells, out.width="80%", echo=TRUE}
 
 # Summarize all cells  ----------------------------------------------------
 
@@ -185,7 +185,7 @@ print(m.grid)
 For each double-incubated cell, we now have a model of how H3K27me3 and H3K9me3 are mixed together to generate the observed double-incubated cut fragments. We use this cell-specific model to assign reads in each regions to either H3K27me3 or H3K9me3. 
 
 
-```{r deconvolve_matrix, echo=FALSE}
+```{r deconvolve_matrix, echo=TRUE}
 
 
 # Deconvolve double-incubated count matrix ------------------------------------------------------
@@ -229,7 +229,7 @@ We take the H3K27me3 cuts deconvolved from double-incubated cells and project th
 We project only 10 cells onto the manifold to show how its done without having to wait too long to finish while still running on a single core.
 
 
-```{r project_cells_subset, echo=FALSE}
+```{r project_cells_subset, echo=TRUE}
 
 
 data(H3K27me3_LdaOutputs)  # out.lda.k27me3
@@ -260,7 +260,7 @@ system.time(
 
 We can visualize both UMAPs together now. We link the two UMAPs together with the deconvoved double-incubated cells as connections between  the two UMAPs. 
 
-```{r linking_umaps, echo=FALSE}
+```{r linking_umaps, echo=TRUE}
 
 jsettings <- umap::umap.defaults
 jsettings$n_neighbors <- 30
@@ -316,7 +316,7 @@ dat.merge.singles <- dat.merge.singles %>%
 ```
 
 
-```{r plot_umap2, out.width="80%", echo = FALSE}
+```{r plot_umap2, out.width="80%", echo=TRUE}
 m <- ggplot(dat.merge.singles, aes(x = -1 * umap1.shift, y = umap2.shift, color = celltype, shape = mark, group = cell)) +
   geom_point() +
   geom_path(size = 0.1, alpha = 0.1) +
