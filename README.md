@@ -21,5 +21,5 @@ Here are a list of vignettes for guided analysis:
 
 [Analysis of scChIX downstream:](https://github.com/jakeyeung/scChIX/blob/main/vignettes/scChIX-vignette.md)
 
-[Analysis of scChIX gastrulation:](https://github.com/jakeyeung/scChIX/blob/main/vignettes/scChIX-gastrulation.md)
+[Comparing cell type and heterochromatin relationships, and global changes in ratios of two histone modifications:](https://github.com/jakeyeung/scChIX/blob/main/vignettes/scChIX-gastrulation.md)
 
