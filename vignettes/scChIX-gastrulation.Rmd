@@ -37,7 +37,8 @@ library(ggforce)
 First, we load the count matrices that are used for running the scChIX snakemake workflow. 
 
 ```{r load-countmats, out.width="80%", echo=TRUE}
-data(CountMatsGastrulationInputs)
+# Since this chunk requires you to download a large file, you can skip this and go directly to the scChIX output analysis, where you will just load the scChIX output
+# data(CountMatsGastrulationInputs)  # this is >100 MB so download it from GEO because github doesn't allow large files
 # Loading objects:
 #   countmats.gastru
 ```
@@ -145,7 +146,7 @@ m.ratios <- ggplot(coords.dbl, aes(x = celltype.act, y = log2(w / (1 - w)), fill
   theme_bw() +
   scale_fill_identity() + 
   ylab("log2 H3K36me3 to H3K9me3 ratio") + 
-  theme(aspect.ratio=1, panel.grid.major = element_blank(), panel.grid.minor = element_blank()) + 
+  theme(aspect.ratio=1, panel.grid.major = element_blank(), panel.grid.minor = element_blank(), axis.text.x = element_text(angle = 45, hjust = 1, vjust = 1)) + 
   ggtitle("log2 H3K36me3 to H3K9me3 ratio inferred from double-incubated cells")
 print(m.ratios)
 ```
