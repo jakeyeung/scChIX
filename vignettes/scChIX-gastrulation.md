@@ -1,50 +1,25 @@
----
-title: "scChIX example: performing model selection, unmixing double-incubated cells, and linking UMAPs"
-output:
-  md_document:
-    variant: markdown_github
-    toc: true
-vignette: >
-  %\VignetteIndexEntry{scChIX-gastrulation}
-  %\VignetteEngine{knitr::rmarkdown}
-  %\VignetteEncoding{UTF-8}
----
+-   [Set up gastrulation data for scChIX snakemake
+    workflow](#set-up-gastrulation-data-for-scchix-snakemake-workflow)
+-   [Run snakemake workflow](#run-snakemake-workflow)
+-   [Uncover cell type and heterochromatin
+    relationships](#uncover-cell-type-and-heterochromatin-relationships)
 
+## Set up gastrulation data for scChIX snakemake workflow
 
-```{r opts, include = FALSE}
-knitr::opts_chunk$set(
-  collapse = TRUE,
-  warning = FALSE,
-  cache  = TRUE,
-  fig.width = 14,
-  fig.width = 14,
-  comment = "#>"
-)
-```
+First, we load the count matrices that are used for running the scChIX
+snakemake workflow.
 
-
-```{r libs, echo=FALSE, include=FALSE}
-library(scChIX)
-library(dplyr)
-library(ggplot2)
-library(data.table)
-library(hash)
-library(ggforce)
-```
-
-## Set up gastrulation data for scChIX snakemake workflow 
-
-First, we load the count matrices that are used for running the scChIX snakemake workflow. 
-
-```{r load-countmats, out.width="80%", echo=TRUE}
+``` r
 data(CountMatsGastrulationInputs)
 # Loading objects:
 #   countmats.gastru
 ```
 
-Save these count matrices as `.rds` files into a `snakemake_inputs/countmats` directory where the `Snakefile`, `config.yaml`, and `cluster.json` files are. 
+Save these count matrices as `.rds` files into a
+`snakemake_inputs/countmats` directory where the `Snakefile`,
+`config.yaml`, and `cluster.json` files are.
 
-```{r scchix-workflow, out.width="80%", echo=TRUE}
+``` r
 # copy snakemake workflow files into directory for outputs
 outdir <- "/tmp"
 copycmd=paste0("cp snakemake_workflow/Snakefile snakemake_workflow/cluster.json snakemake_workflow/config.yaml snakemake_workflow/run_snakemake.gastru_K9.sh", outdir)
@@ -60,11 +35,12 @@ mkdircmd=paste0("mkdir -p ", outdir, "/snakemake_inputs/countmats")
 #   saveRDS(countmats.gastru[[jmark]], file.path(outdir, paste0("countmat_var_filt.", jmark, ".rds")))
 # }
 print(outdir)
+#> [1] "/tmp"
 ```
 
-## Run snakemake workflow 
+## Run snakemake workflow
 
-```{r run-snakemake-example, out.width="80%", echo=TRUE}
+``` r
 bashscript=file.path(outdir, paste0("run_snakemake.gastru_K9.sh")) # modify for your specific conda environment and HPC cluster settings
 runcmd=paste0("bash ", bashscript)
 # system(runcmd)  # launch snakemake workflow
@@ -72,10 +48,10 @@ runcmd=paste0("bash ", bashscript)
 
 ## Uncover cell type and heterochromatin relationships
 
-Let's load the outputs of the snakemake workflow and look at the cell type and 
-heterochromatin relationships. 
+Let’s load the outputs of the snakemake workflow and look at the cell
+type and heterochromatin relationships.
 
-```{r load-scchix-output, out.width="80%", echo=TRUE}
+``` r
 data(GastrulationScChIXOutputsK36K9m3)
 # Loading objects:
 #   act.repress.coord.lst
@@ -90,9 +66,10 @@ louv2ctype.repress <- hash::hash(louvain.celltype.metadata$K9m3$louv.repress, lo
 ctype2colcode <- hash::hash(ctype.colcode.metadata$cluster, ctype.colcode.metadata$colorcode)
 ```
 
-We wrangle the fits and then plot the celltype to heterochromatin relationship 
+We wrangle the fits and then plot the celltype to heterochromatin
+relationship
 
-```{r wrangle-scchix, out.width="80%", echo=TRUE}
+``` r
 # if louvains are now from clusters need eto rethink jcoord
 cell.vec <- names(fits.out)
 names(cell.vec) <- cell.vec
@@ -136,10 +113,12 @@ m.grid <- ggplot(coords.dbl, aes(x = celltype.act, y = celltype.repress, color =
 print(m.grid)
 ```
 
-The scChIX output also reveals global ratios of H3K36me3 and H3K9me3 and how they are lower in erythroids versus other cell types.
+<img src="scChIX-gastrulation_files/figure-markdown_github/wrangle-scchix-1.png" width="80%" />
 
+The scChIX output also reveals global ratios of H3K36me3 and H3K9me3 and
+how they are lower in erythroids versus other cell types.
 
-```{r ratios, out.width="80%", echo=TRUE}
+``` r
 m.ratios <- ggplot(coords.dbl, aes(x = celltype.act, y = log2(w / (1 - w)), fill = colcode)) +
   geom_boxplot() + 
   theme_bw() +
@@ -150,6 +129,4 @@ m.ratios <- ggplot(coords.dbl, aes(x = celltype.act, y = log2(w / (1 - w)), fill
 print(m.ratios)
 ```
 
-
-
-
+<img src="scChIX-gastrulation_files/figure-markdown_github/ratios-1.png" width="80%" />
