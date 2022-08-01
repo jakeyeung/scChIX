@@ -37,10 +37,15 @@ library(ggforce)
 First, we load the count matrices that are used for running the scChIX snakemake workflow. 
 
 ```{r load-countmats, out.width="80%", echo=TRUE}
-# Since this chunk requires you to download a large file, you can skip this and go directly to the scChIX output analysis, where you will just load the scChIX output
-# data(CountMatsGastrulationInputs)  # this is >100 MB so download it from GEO because github doesn't allow large files
+# download "CountMatsGastrulationInputs.RData" from external URL (or GEO) because github doesn't allow files >100MB. 
+
+# The object can be downloaded from seafile.ist.ac.at: 
+# wget https://seafile.ist.ac.at/f/915d8fde09d14c659ed3/?dl=1 -O CountMatsGastrulationInputs.RData
+
+# load("CountMatsGastrulationInputs.RData")
 # Loading objects:
 #   countmats.gastru
+
 ```
 
 Save these count matrices as `.rds` files into a `snakemake_inputs/countmats` directory where the `Snakefile`, `config.yaml`, and `cluster.json` files are. 

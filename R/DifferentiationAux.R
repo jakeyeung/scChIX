@@ -32,11 +32,11 @@ GetDayFromCellDataFrame <- function(dat.meta){
 #' @export
 GetDayFromCellByRow <- function(cell){
   # assumes "cell" is in column name
-  platename <- scChIX::ClipLast(cell, jsep = "_")
-  experi <- scChIX::ClipLast(platename, jsep = "-")
+  platename <- scChIX:::ClipLast(cell, jsep = "_")
+  experi <- scChIX:::ClipLast(platename, jsep = "-")
   cellname <- paste0("cell", strsplit(cell, split = "_")[[1]][[2]])
-  jcol <- scChIX::GetPlateCoord(cellname, is.zero.base = FALSE)[[2]]
-  jrow <- scChIX::GetPlateCoord(cellname, is.zero.base = FALSE)[[1]]
+  jcol <- scChIX:::GetPlateCoord(cellname, is.zero.base = FALSE)[[2]]
+  jrow <- scChIX:::GetPlateCoord(cellname, is.zero.base = FALSE)[[1]]
   day <- ceiling(jcol / 3)
   return(day)
 }
