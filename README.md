@@ -23,3 +23,4 @@ Here are a list of vignettes for guided analysis:
 
 [Comparing cell type and heterochromatin relationships, and global changes in ratios of two histone modifications:](https://github.com/jakeyeung/scChIX/blob/main/vignettes/scChIX-gastrulation.md)
 
+[Inferring dual continuous pseudotime during macrophage differentiation](https://github.com/jakeyeung/scChIX/blob/main/vignettes/scChIX-macrophagedifferentiation.md)
