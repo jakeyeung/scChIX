@@ -58,14 +58,31 @@ First, we load our training data.
 #   lowess.fits.k36me3
 ```
 
-Next we load our count matrix.
+Next we load our count matrix. To improve scChIX inference, we sum counts across 25 nearest neighbors.
 
 
 ```{r loadcount}
-data(MacDiffDblMat_H3K4me1xH3K36me3)
-# Loading objects:
-#   mat.dbl.knn25
 
+
+data(MacDiffDblMatNearestNeighbors)
+# Loading objects:
+#   umap.out
+data(MacDiffDblMatForSplitting_H3K4me1xH3K36me3)
+# Loading objects:
+#   mat.dbl.H3K4me1xH3K36me3
+mat.dbl <- mat.dbl.H3K4me1xH3K36me3; rm(mat.dbl.H3K4me1xH3K36me3)
+
+nn <- 25
+dbl.cells <- rownames(umap.out$knn$distances); names(dbl.cells) <- dbl.cells
+nearest.cells.lst <- lapply(dbl.cells, function(jcell){
+  indx.vec <- umap.out$knn$indexes[jcell, 1:nn]
+  nearest.cells <- rownames(umap.out$knn$distances)[indx.vec]
+})
+mat.dbl.knn <- lapply(dbl.cells, function(jcell){
+  jcells.keep <- nearest.cells.lst[[jcell]]
+  rowSums(mat.dbl[, jcells.keep])
+})
+mat.dbl <- do.call(cbind, mat.dbl.knn)
 ```
 
 

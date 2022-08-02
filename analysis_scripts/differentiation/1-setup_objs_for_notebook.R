@@ -94,29 +94,29 @@ if (nn > 1){
   print("nn = 1, no knn smoothing")
 }
 
-# mat.dbl.knn <- mat.dbl
-
-# Save count mat ----------------------------------------------------------
-
 outdir <- "/nfs/scistore12/hpcgrp/jyeung/projects/scChIX/data"
-save(mat.dbl, file = file.path(outdir, paste0("MacDiffDblMat_H3K4me1xH3K36me3.RData")))
 
-# Save lowess -------------------------------------------------------------
-
-lowess.fits.k4me1 <- readRDS(lowess1)
-lowess.fits.k36me3 <- readRDS(lowess2)
-
-save(lowess.fits.k4me1, file = file.path(outdir, paste0("LowessFits_H3K4me1.RData")))
-save(lowess.fits.k36me3, file = file.path(outdir, paste0("LowessFits_H3K36me3.RData")))
-
-
-
-
-# Save fits raw -----------------------------------------------------------
-
-save(dat.fits.raw, file = file.path(outdir, paste0("scChIXOutputs_H3K4me1xH3K36me3.RData")))
-
-
-# save meta ---------------------------------------------------------------
-
-save(dat.merge.rbind.clean, file = file.path(outdir, paste0("MacDiffMetadata_H3K4me1xH3K36me3.RData")))
+save(umap.out, file = "/nfs/scistore12/hpcgrp/jyeung/projects/scChIX/data/MacDiffDblMatNearestNeighbors.RData")
+# 
+# # Save count mat ----------------------------------------------------------
+# 
+mat.dbl.knn <- mat.dbl
+save(mat.dbl.knn, file = file.path(outdir, paste0("MacDiffDblMat_H3K4me1xH3K36me3.RData")))
+# 
+# # Save lowess -------------------------------------------------------------
+# 
+# lowess.fits.k4me1 <- readRDS(lowess1)
+# lowess.fits.k36me3 <- readRDS(lowess2)
+# 
+# save(lowess.fits.k4me1, file = file.path(outdir, paste0("LowessFits_H3K4me1.RData")))
+# save(lowess.fits.k36me3, file = file.path(outdir, paste0("LowessFits_H3K36me3.RData")))
+# 
+# 
+# # Save fits raw -----------------------------------------------------------
+# 
+# save(dat.fits.raw, file = file.path(outdir, paste0("scChIXOutputs_H3K4me1xH3K36me3.RData")))
+# 
+# 
+# # save meta ---------------------------------------------------------------
+# 
+# save(dat.merge.rbind.clean, file = file.path(outdir, paste0("MacDiffMetadata_H3K4me1xH3K36me3.RData")))
