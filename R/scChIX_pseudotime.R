@@ -48,7 +48,23 @@ PredictSignalGenomeWideLowess <- function(lowess.fits, ptime, linearize = TRUE, 
   return(preds)
 }
 
-PredictSignalGenomeWideLowessLinear <- function(lowess.fits, ptime, linearize = TRUE, normalize = TRUE){
+#' Estimate the signal given a lowess fit and pseudotime.
+#' 
+#' @param lowess.fits lowess fits for every gene along pseudotime
+#' @param ptime pseudotime to estimate the signal at
+#' @return preds: for every gene, what is the predicted signal at pseudotime ptime
+#' @examples
+#' x.raw.unmixed <- parallel::mclapply(all.cells, function(jcell){
+#' x.raw <- all.x.raw[[jcell]]
+#' ptime1 <- dat.fits.clean.lst[[jcell]]$ptime1
+#' ptime2 <- dat.fits.clean.lst[[jcell]]$ptime2
+#' p1.cell <- PredictSignalGenomeWideLowessLinear(lowess.fits = lowess.fits.k4me1, ptime = ptime1)
+#' p2.cell <- PredictSignalGenomeWideLowessLinear(lowess.fits = lowess.fits.k36me3, ptime = ptime2)
+#' x.unmixed.lst <- UnmixRawCounts(x.raw = x.raw, mixweight = w.fixed, p.active = p1.cell, p.repress = p2.cell, random.seed = 0)
+#' return(x.unmixed.lst)
+#' }, mc.cores = ncores)
+#' @export
+PredictSignalGenomeWideLowessLinear <- function(lowess.fits, ptime){
   # assumes log2
   jgenes.vec <- names(lowess.fits); names(jgenes.vec) <- jgenes.vec
   preds <- lapply(jgenes.vec, function(jgene){

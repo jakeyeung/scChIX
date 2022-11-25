@@ -32,7 +32,7 @@ library(hash)
 library(ggforce)
 ```
 
-## Set up gastrulation data for scChIX snakemake workflow 
+## Set up organogenesis data for scChIX snakemake workflow 
 
 First, we load the count matrices that are used for running the scChIX snakemake workflow. 
 
@@ -157,5 +157,81 @@ print(m.ratios)
 ```
 
 
+This can be a UMAP.
 
 
+```{r ratios, out.width="80%", echo=TRUE}
+m.ratios <- ggplot(coords.dbl, aes(x = celltype.act, y = log2(w / (1 - w)), fill = colcode)) +
+  geom_boxplot() + 
+  theme_bw() +
+  scale_fill_identity() + 
+  ylab("log2 H3K36me3 to H3K9me3 ratio") + 
+  theme(aspect.ratio=1, panel.grid.major = element_blank(), panel.grid.minor = element_blank(), axis.text.x = element_text(angle = 45, hjust = 1, vjust = 1)) + 
+  ggtitle("log2 H3K36me3 to H3K9me3 ratio inferred from double-incubated cells")
+print(m.ratios)
+```
+
+
+```{r check}
+
+inf.meta.annot <- "/nfs/scistore12/hpcgrp/jyeung/data_from_Hubrecht/hpc_hub_oudenaarden/scChIX_source_data/Figure_04_scChIX_organo_H3K36me3_and_H3K9me3_metadata_final.txt.gz"
+dat.meta.annot <- fread(inf.meta.annot)
+
+cell2ctype <- hash::hash(dat.meta.annot$cell, dat.meta.annot$cluster)
+cell2col <- hash::hash(dat.meta.annot$cell, dat.meta.annot$clustercol)
+
+# inf.meta <- "/nfs/scistore12/hpcgrp/jyeung/data_from_Hubrecht/hpc_hub_oudenaarden/scChIX_gastrulation/from_analysis_macbook/objs_from_macbook/metadata_flipped.rds"
+inf.meta <- "/nfs/scistore12/hpcgrp/jyeung/data_from_Hubrecht/hpc_hub_oudenaarden/scChIX_gastrulation/from_cluster/metadata/metadata_cleaned.2021-10-04.rds"
+dat.meta <- readRDS(inf.meta)  %>%
+  rowwise() %>%
+  mutate(clusterold = cluster, 
+         cluster = cell2ctype[[cell]],
+         clustercol = cell2col[[cell]])
+
+
+ggplot(dat.meta, aes(x = umap1, y = umap2, color = clustercol, group = cell)) + 
+  geom_line(alpha = 0.1) + 
+  geom_point() + 
+  theme_bw() + 
+  scale_color_identity() + 
+  theme(aspect.ratio=0.5, panel.grid.major = element_blank(), panel.grid.minor = element_blank())
+
+dat.meta.ratios <- left_join(coords.dbl, dat.meta)
+
+m.umap <- ggplot(dat.meta.ratios, aes(x = umap1, y = umap2, color = log2(w / (1 - w)), group = cell)) + 
+  geom_line(alpha = 0.1) + 
+  geom_point() + 
+  theme_bw() + 
+  scale_color_viridis_c() + 
+  theme(aspect.ratio=0.4, panel.grid.major = element_blank(), panel.grid.minor = element_blank(), legend.position = "bottom")
+
+# dat.meta$plate <- sapply(dat.meta$cell, function(x) scchicFuncs::ClipLast(x = x, jsep = "_"))
+# dat.meta$cond <- interaction(dat.meta$type, dat.meta$mark, sep = "_")
+# dat.meta.split <- split(dat.meta, f = dat.meta$cond)
+# 
+# dat.plates <- lapply(dat.meta.split, function(dat){
+#   unique(dat$plate)
+# })
+# nplates <- sapply(dat.plates, function(jdat) length(jdat))
+# 
+# 
+# inf.meta.mac <- "/nfs/scistore12/hpcgrp/jyeung/data_from_Hubrecht/hpc_hub_oudenaarden/scChIX_differentiation/for_databank/processed_data/scchix_macrophage_differentiation_dat_meta_merged_H3K4me1_and_H3K36me3.txt.gz"
+# dat.meta.mac <- fread(inf.meta.mac)
+# dat.meta.mac$plate <- sapply(dat.meta.mac$cell, function(x) scchicFuncs::ClipLast(x = x, jsep = "_"))
+# dat.meta.mac$cond <- interaction(dat.meta.mac$experi, dat.meta.mac$mark, sep = "_")
+# dat.meta.mac.split <- split(dat.meta.mac, f = dat.meta.mac$cond)
+# 
+# dat.plates.mac <- lapply(dat.meta.mac.split, function(dat){
+#   unique(dat$plate)
+# })
+# nplates <- sapply(dat.plates.mac, function(jdat) length(jdat))
+
+# save outputs
+outpdf <- paste0("/nfs/scistore12/hpcgrp/jyeung/projects/scChIX/plots/organogenesis_umaps.", Sys.Date(), ".pdf")
+pdf(outpdf, useDingbats = FALSE)
+
+print(m.ratios)
+print(m.umap)
+
+dev.off()
+```

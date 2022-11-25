@@ -231,7 +231,7 @@ ggplot(dat.binmeans.binned, aes(x = xbin, y = 0, ymin = CI.lower.centered, ymax 
   ylab("95% Confidence Interval (+/- Fraction)") +
   coord_cartesian(ylim = c(-0.1, 0.1))
 
-
+# fwrite(dat.binmeans.binned, file = "/nfs/scistore12/hpcgrp/jyeung/data_from_Hubrecht/hpc_hub_oudenaarden/scChIX_source_data/Figure_01_simulations.txt", sep = "\t")
 ```
 
 We can show that the two UMAPs can be linked together using the deconvolved
@@ -299,5 +299,7 @@ m.infer.lst <- lapply(frac.mutexcl.str.vec, function(jfrac){
 print(m.infer.lst)
 JFuncs::multiplot(m.infer.lst[[1]], m.infer.lst[[2]], m.infer.lst[[3]], cols = 3)
 
-
+# dat.binmeans.long <- dat.binmeans.lst %>%
+#   bind_rows()
+# fwrite(dat.binmeans.long, file = "/nfs/scistore12/hpcgrp/jyeung/data_from_Hubrecht/hpc_hub_oudenaarden/scChIX_source_data/ExtendedDataFigure_01_simulations.txt", sep = "\t")
 ```

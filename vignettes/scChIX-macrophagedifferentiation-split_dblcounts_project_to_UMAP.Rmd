@@ -1,0 +1,152 @@
+---
+title: "scChIX on macrophage differentiation: splitting counts to their respective histone mark"
+output:
+  md_document:
+    variant: markdown_github
+    toc: true
+vignette: >
+  %\VignetteIndexEntry{scChIX-macrophagedifferentiation-split_dblcounts_project_to_UMAP}
+  %\VignetteEngine{knitr::rmarkdown}
+  %\VignetteEncoding{UTF-8}
+---
+
+
+```{r opts, include = FALSE}
+knitr::opts_chunk$set(
+  collapse = TRUE,
+  warning = FALSE,
+  echo = TRUE,
+  cache  = TRUE,
+  fig.width = 14,
+  fig.width = 14,
+  comment = "#>"
+)
+```
+
+
+```{r libs, echo=FALSE, include=FALSE}
+library(scChIX)
+library(dplyr)
+library(ggplot2)
+library(data.table)
+library(topicmodels)i
+library(hash)
+library(igraph)
+library(umap)
+library(Matrix)
+# notebook derived from script: /nfs/scistore12/hpcgrp/jyeung/projects/scchix-differentiation/jupyterhub_scripts/13-pseudotime_scchix_outputs_fixedw_H3K4me1-H3K36me3_knn_raw_counts_Grep_Granulocytes.R
+```
+
+
+## Load scChIX fits and count table of double-incubated cells 
+
+Load the scChIX output, double-incubated count matrix, and training data 
+
+```{r loadfits-loadcounts}
+
+jmarks <- c("H3K4me1", "H3K36me3", "H3K4me1-H3K36me3"); names(jmarks) <- jmarks
+jmarks.singles <- jmarks[1:2]
+jmark1 <- jmarks.singles[[1]]
+jmark2 <- jmarks.singles[[2]]
+jstr <- paste(jmarks, collapse = "_")
+
+
+data(scChIXOutputs_H3K4me1xH3K36me3)
+# Loading objects:
+#  dat.fits.raw
+
+data(MacDiffDblMatForSplitting_H3K4me1xH3K36me3)
+# Loading objects:
+#   mat.dbl.H3K4me1xH3K36me3
+mat.dbl <- mat.dbl.H3K4me1xH3K36me3; rm(mat.dbl.H3K4me1xH3K36me3)
+
+
+# The training data objects are too large for github, so download them from seafile.ist.ac.at:
+# wget https://seafile.ist.ac.at/f/4c9902f7e77e4e78b02e/?dl=1 -O LowessFits_H3K4me1.RData
+# wget https://seafile.ist.ac.at/f/c1bdec80ab8943d790f3/?dl=1 -O LowessFits_H3K36me3.RData
+
+# load("data/LowessFits_H3K4me1", v=T)
+# load("data/LowessFits_H3K4me1_TooBigDoNotCommit.RData", v=T)
+load("/nfs/scistore12/hpcgrp/jyeung/projects/scChIX/data/LowessFits_H3K4me1_TooBigDoNotCommit.RData", v=T)
+# Loading objects:
+#   lowess.fits.k4me1
+# load("data/LowessFits_H3K36me3", v=T)
+# load("data/LowessFits_H3K36me3_TooBigDoNotCommit.RData", v=T)
+load("/nfs/scistore12/hpcgrp/jyeung/projects/scChIX/data/LowessFits_H3K36me3_TooBigDoNotCommit.RData", v=T)
+# Loading objects:
+#   lowess.fits.k36me3
+
+# Wrangle scChIX outputs
+jcells.subset <- colnames(mat.dbl)
+dat.fits.clean.lst <- lapply(jcells.subset, function(jcell){
+  jdat <- data.frame(cell = jcell,
+                     ptime1 = dat.fits.raw[[jcell]]$par[[1]],
+                     ptime2 = dat.fits.raw[[jcell]]$par[[2]],
+                     stringsAsFactors = FALSE)
+  # get se
+  mathessian <- dat.fits.raw[[jcell]]$hessian
+  inversemathessian <- solve(mathessian)
+  res <- sqrt(diag(inversemathessian))
+  jdat$ptime1.se <- res[[1]]
+  jdat$ptime2.se <- res[[2]]
+  return(jdat)
+})
+```
+
+
+## Split reads from each cell at each genomic locus based on the probability estimates inferred from scChIX 
+
+
+```{r splitreads}
+ncores <- 8
+
+all.cells <- colnames(mat.dbl)
+names(all.cells) <- all.cells
+col.i <- seq_len(ncol(mat.dbl))
+names(col.i) <- colnames(mat.dbl)
+all.x.raw <- lapply(col.i, function(i) mat.dbl[, i])  # https://stackoverflow.com/questions/6819804/how-to-convert-a-matrix-to-a-list-of-column-vectors-in-r/6823557
+
+# prob vector from p1, p2 for each cell
+print("Unmixing...")
+w.fixed <- 0.77
+jstart <- Sys.time()
+x.raw.unmixed <- parallel::mclapply(all.cells, function(jcell){
+  x.raw <- all.x.raw[[jcell]]
+  ptime1 <- dat.fits.clean.lst[[jcell]]$ptime1
+  ptime2 <- dat.fits.clean.lst[[jcell]]$ptime2
+  p1.cell <- PredictSignalGenomeWideLowessLinear(lowess.fits = lowess.fits.k4me1, ptime = ptime1)
+  p2.cell <- PredictSignalGenomeWideLowessLinear(lowess.fits = lowess.fits.k36me3, ptime = ptime2)
+  x.unmixed.lst <- UnmixRawCounts(x.raw = x.raw, mixweight = w.fixed, p.active = p1.cell, p.repress = p2.cell, random.seed = 0)
+  return(x.unmixed.lst)
+}, mc.cores = ncores)
+print(Sys.time() - jstart)
+print("Unmixing... done")
+
+# cleanup outputs
+rnames <- rownames(mat.dbl)
+x.mat1 <- Matrix(as.matrix(as.data.frame(lapply(x.raw.unmixed, function(outlst) return(outlst$x.raw.active)), row.names = rnames), sparse = TRUE))
+x.mat2 <- Matrix(as.matrix(as.data.frame(lapply(x.raw.unmixed, function(outlst) return(outlst$x.raw.repress)), row.names = rnames), sparse = TRUE))
+x.mat1 <- Matrix(x.mat1, sparse = TRUE)
+x.mat2 <- Matrix(x.mat2, sparse = TRUE)
+# fix cnames, dots to dashes
+colnames(x.mat1) <- gsub("\\.", "-", colnames(x.mat1))
+colnames(x.mat2) <- gsub("\\.", "-", colnames(x.mat2))
+```
+
+## Load pre-trained manifold from single-incubated cells and project deconvolved cells onto their respective histone modifications 
+
+```{r projectLDA}
+
+# Download pre-trained LDA output: MacDiffSinglesLdaOutput.RData 
+# https://seafile.ist.ac.at/f/f0081d545a01469e8224/
+load("data/MacDiffSinglesLdaOutput.RData", v=T)
+# Loading objects:
+#   out.lda.lst
+
+load("data/MacDiffMetadata_H3K4me1xH3K36me3.RData", v=T)
+
+```
+
+
+
+

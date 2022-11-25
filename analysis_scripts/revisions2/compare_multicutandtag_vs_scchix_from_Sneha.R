@@ -71,6 +71,7 @@ dats.merged.summary <- dats.merged %>%
 
 print(dats.merged.summary)
 
+fwrite(dats.merged, file = paste0("/nfs/scistore12/hpcgrp/jyeung/data_from_Hubrecht/hpc_hub_oudenaarden/scChIX_revisions/benchmarking/compare_with_scchix_from_Sneha_input.", Sys.Date(), ".txt"))
 fwrite(dats.merged.summary, file = paste0("/nfs/scistore12/hpcgrp/jyeung/data_from_Hubrecht/hpc_hub_oudenaarden/scChIX_revisions/benchmarking/compare_with_scchix_from_Sneha_summary.", Sys.Date(), ".txt"))
 
 pdf(paste0("/nfs/scistore12/hpcgrp/jyeung/data_from_Hubrecht/hpc_hub_oudenaarden/scChIX_revisions/benchmarking/compare_with_scchix_from_Sneha.", Sys.Date(), ".pdf"), useDingbats = FALSE)

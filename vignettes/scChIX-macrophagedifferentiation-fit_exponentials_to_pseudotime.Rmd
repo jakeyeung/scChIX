@@ -1,0 +1,39 @@
+---
+title: "scChIX on macrophage differentiation: fit_exponentials_to_pseudotime"
+output:
+  md_document:
+    variant: markdown_github
+    toc: true
+vignette: >
+  %\VignetteIndexEntry{scChIX-macrophagedifferentiation-fit_exponentials_to_pseudotime}
+  %\VignetteEngine{knitr::rmarkdown}
+  %\VignetteEncoding{UTF-8}
+---
+
+
+```{r opts, include = FALSE}
+knitr::opts_chunk$set(
+  collapse = TRUE,
+  warning = FALSE,
+  echo = TRUE,
+  cache  = TRUE,
+  fig.width = 14,
+  fig.width = 14,
+  comment = "#>"
+)
+```
+
+
+```{r libs, echo=FALSE, include=FALSE}
+library(scChIX)
+library(dplyr)
+library(ggplot2)
+library(data.table)
+library(topicmodels)
+library(hash)
+library(igraph)
+library(umap)
+```
+
+
+
